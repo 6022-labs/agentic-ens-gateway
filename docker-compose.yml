@@ -2,7 +2,7 @@ services:
   ens-gateway:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: src/ens_gateway_host/Dockerfile
     env_file:
       - src/ens_gateway_host/.env
     ports:
