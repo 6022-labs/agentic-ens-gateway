@@ -1,0 +1,115 @@
+basePath: /
+definitions:
+  ens_gateway_mvc.ccipReadPostBody:
+    properties:
+      data:
+        type: string
+    type: object
+  responses.CcipReadResponse:
+    properties:
+      data:
+        type: string
+    type: object
+  responses.GetHealthResponse:
+    properties:
+      status:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: ERC-3668 / CCIP-Read gateway for agent ENS records.
+  title: Agentic ENS Gateway API
+  version: "1.0"
+paths:
+  /{sender}:
+    post:
+      consumes:
+      - application/json
+      description: Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver
+        address; the body carries the 0x-hex resolver call data.
+      parameters:
+      - description: L1 resolver address
+        in: path
+        name: sender
+        required: true
+        type: string
+      - description: resolver call data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/ens_gateway_mvc.ccipReadPostBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CcipReadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: CCIP-Read gateway (POST)
+      tags:
+      - CCIP-Read
+  /{sender}/{data}:
+    get:
+      description: Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver
+        address; `data` is the 0x-hex resolver call data, optionally suffixed with
+        `.json`.
+      parameters:
+      - description: L1 resolver address
+        in: path
+        name: sender
+        required: true
+        type: string
+      - description: 0x-hex resolver call data
+        in: path
+        name: data
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.CcipReadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: CCIP-Read gateway (GET)
+      tags:
+      - CCIP-Read
+  /health:
+    get:
+      description: Liveness probe for the ENS gateway.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.GetHealthResponse'
+      summary: Health check
+      tags:
+      - Health
+swagger: "2.0"

@@ -1,0 +1,133 @@
+components:
+  schemas:
+    ens_gateway_mvc.ccipReadPostBody:
+      properties:
+        data:
+          type: string
+      type: object
+    responses.CcipReadResponse:
+      properties:
+        data:
+          type: string
+      type: object
+    responses.GetHealthResponse:
+      properties:
+        status:
+          type: string
+      type: object
+externalDocs:
+  description: ""
+  url: ""
+info:
+  description: ERC-3668 / CCIP-Read gateway for agent ENS records.
+  title: Agentic ENS Gateway API
+  version: "1.0"
+openapi: 3.1.0
+paths:
+  /{sender}:
+    post:
+      description: Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver
+        address; the body carries the 0x-hex resolver call data.
+      parameters:
+      - description: L1 resolver address
+        in: path
+        name: sender
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - type: object
+              - $ref: '#/components/schemas/ens_gateway_mvc.ccipReadPostBody'
+                description: resolver call data
+                summary: body
+        description: resolver call data
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.CcipReadResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Internal Server Error
+      summary: CCIP-Read gateway (POST)
+      tags:
+      - CCIP-Read
+  /{sender}/{data}:
+    get:
+      description: Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver
+        address; `data` is the 0x-hex resolver call data, optionally suffixed with
+        `.json`.
+      parameters:
+      - description: L1 resolver address
+        in: path
+        name: sender
+        required: true
+        schema:
+          type: string
+      - description: 0x-hex resolver call data
+        in: path
+        name: data
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.CcipReadResponse'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Bad Request
+        "500":
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+          description: Internal Server Error
+      summary: CCIP-Read gateway (GET)
+      tags:
+      - CCIP-Read
+  /health:
+    get:
+      description: Liveness probe for the ENS gateway.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/responses.GetHealthResponse'
+          description: OK
+      summary: Health check
+      tags:
+      - Health
+servers:
+- url: /

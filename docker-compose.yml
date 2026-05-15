@@ -1,0 +1,9 @@
+services:
+  ens-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - src/ens_gateway_host/.env
+    ports:
+      - "5000:5000"

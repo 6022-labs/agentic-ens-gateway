@@ -1,0 +1,30 @@
+# Build context is the repo root.
+
+# VCS + IDE
+.git
+.gitignore
+.vscode
+.idea
+.devcontainer
+
+# Local secrets / configs (use env or mount real config)
+.env
+**/.env
+**/appsettings.json
+
+# Tests + mocks
+tests/
+
+# Build / module artifacts
+bin/
+*.test
+*.out
+coverage.*
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Compose / runtime state
+docker-compose.override.yml
+*.pid
