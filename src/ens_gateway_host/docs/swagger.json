@@ -1,0 +1,171 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "ERC-3668 / CCIP-Read gateway for agent ENS records.",
+        "title": "Agentic ENS Gateway API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/health": {
+            "get": {
+                "description": "Liveness probe for the ENS gateway.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.GetHealthResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/{sender}": {
+            "post": {
+                "description": "Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address; the body carries the 0x-hex resolver call data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CCIP-Read"
+                ],
+                "summary": "CCIP-Read gateway (POST)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "L1 resolver address",
+                        "name": "sender",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "resolver call data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/ens_gateway_mvc.ccipReadPostBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CcipReadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/{sender}/{data}": {
+            "get": {
+                "description": "Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address; `data` is the 0x-hex resolver call data, optionally suffixed with `.json`.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CCIP-Read"
+                ],
+                "summary": "CCIP-Read gateway (GET)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "L1 resolver address",
+                        "name": "sender",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "0x-hex resolver call data",
+                        "name": "data",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.CcipReadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "ens_gateway_mvc.ccipReadPostBody": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.CcipReadResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.GetHealthResponse": {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

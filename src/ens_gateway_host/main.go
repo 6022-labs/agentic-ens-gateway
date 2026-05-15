@@ -1,0 +1,71 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/configurations"
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/settings"
+	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
+	"go.uber.org/zap"
+)
+
+// @title Agentic ENS Gateway API
+// @version 1.0
+// @description ERC-3668 / CCIP-Read gateway for agent ENS records.
+// @BasePath /
+func main() {
+	_ = godotenv.Load(".env")
+
+	config, err := configurations.LoadKoanfConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	container := configurations.ConfigureDI(config)
+	configurations.ConfigureLogging(container)
+	configurations.ConfigureServer(container)
+
+	err = container.Invoke(func(app *fiber.App, logger *zap.Logger, hostSettings *settings.HostSettings) error {
+		bind := fmt.Sprintf(":%d", hostSettings.ApiPort)
+		logger.Info("Starting ENS gateway server", zap.String("bind", bind))
+
+		serverErrCh := make(chan error, 1)
+		go func() {
+			serverErrCh <- app.Listen(bind)
+		}()
+
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case sig := <-sigCh:
+			logger.Info("Shutdown signal received", zap.String("signal", sig.String()))
+
+			if err := app.Shutdown(); err != nil {
+				logger.Warn("Fiber shutdown returned an error", zap.Error(err))
+			}
+
+			if err := <-serverErrCh; err != nil {
+				logger.Error("Server stopped with error", zap.Error(err))
+			} else {
+				logger.Info("Server stopped")
+			}
+			logger.Info("Shutdown complete")
+			_ = logger.Sync()
+			return nil
+
+		case err := <-serverErrCh:
+			if err != nil {
+				return fmt.Errorf("server exited unexpectedly: %w", err)
+			}
+			return nil
+		}
+	})
+	if err != nil {
+		panic(err)
+	}
+}
