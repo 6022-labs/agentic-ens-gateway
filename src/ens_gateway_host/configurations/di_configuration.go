@@ -21,8 +21,6 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 		panic(err)
 	}
 
-	// Registered dependency-first: blockchain provides the registry reader,
-	// then the core domain and the HTTP controllers that depend on it.
 	blockchain_configurations.AddEnsGatewayBlockchainConfiguration(container)
 	ens_gateway_configurations.AddEnsGatewayConfiguration(container)
 	mvc_configurations.AddEnsGatewayMvcConfiguration(container)

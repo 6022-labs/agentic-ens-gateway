@@ -6,8 +6,7 @@ import (
 )
 
 func AddEnsGatewayMvcConfiguration(container *dig.Container) {
-	// HealthController is registered first so its static /health route is
-	// matched ahead of CcipReadController's /:sender/:data param route.
+	// Static /health must register before /:sender/:data so Fiber matches it first.
 	provideController(container, ens_gateway_mvc.NewHealthController)
 	provideController(container, ens_gateway_mvc.NewCcipReadController)
 }

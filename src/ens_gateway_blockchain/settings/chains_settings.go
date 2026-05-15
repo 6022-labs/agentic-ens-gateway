@@ -9,14 +9,10 @@ import (
 
 const ChainsSettingsKey = "chains"
 
-// ChainConfig is the operator-facing per-chain configuration: just the RPC.
-// The matching AgentEnsRegistry contract address is code-managed (see
-// `agent_ens_registries.json` + `AgentEnsRegistriesSettings`).
 type ChainConfig struct {
 	RpcHttpUrl string `koanf:"rpc_http_url"`
 }
 
-// ChainsSettings is the full multi-chain map, keyed by EVM chain id.
 type ChainsSettings map[uint64]*ChainConfig
 
 func NewChainsSettings(logger *zap.Logger, k *koanf.Koanf) *ChainsSettings {
@@ -43,7 +39,6 @@ func NewChainsSettings(logger *zap.Logger, k *koanf.Koanf) *ChainsSettings {
 	return &settings
 }
 
-// Get returns the config for `chainId` or nil if unconfigured.
 func (s *ChainsSettings) Get(chainId uint64) *ChainConfig {
 	if s == nil {
 		return nil

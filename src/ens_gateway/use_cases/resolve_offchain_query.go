@@ -14,9 +14,6 @@ type ResolveOffchainQueryInterface interface {
 	Execute(ctx context.Context, request *requests.ResolveOffchainQueryRequest) (*responses.CcipReadResponse, error)
 }
 
-// ResolveOffchainQuery is the CCIP-Read vertical slice: decode the resolver
-// call data, read the record from AgentEnsRegistry, and return a signed
-// response the L1 resolver can authenticate.
 type ResolveOffchainQuery struct {
 	codec   ens_gateway_interfaces.ResolverServiceCodecInterface
 	reader  ens_gateway_interfaces.AgentEnsRegistryReaderInterface

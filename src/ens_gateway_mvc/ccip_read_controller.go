@@ -32,13 +32,11 @@ type ccipReadPostBody struct {
 	Data string `json:"data"`
 }
 
-// HandleGet serves the ERC-3668 GET form.
 // @Summary CCIP-Read gateway (GET)
-// @Description Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address; `data` is the 0x-hex resolver call data, optionally suffixed with `.json`.
 // @Tags CCIP-Read
 // @Produce json
 // @Param sender path string true "L1 resolver address"
-// @Param data path string true "0x-hex resolver call data"
+// @Param data path string true "0x-hex resolver call data (optional `.json` suffix)"
 // @Success 200 {object} responses.CcipReadResponse
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string
@@ -48,9 +46,7 @@ func (c *CcipReadController) HandleGet(ctx *fiber.Ctx) error {
 	return c.resolve(ctx, ctx.Params("sender"), data)
 }
 
-// HandlePost serves the ERC-3668 POST form.
 // @Summary CCIP-Read gateway (POST)
-// @Description Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address; the body carries the 0x-hex resolver call data.
 // @Tags CCIP-Read
 // @Accept json
 // @Produce json

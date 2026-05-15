@@ -11,10 +11,6 @@ import (
 	"go.uber.org/zap"
 )
 
-// AgentEnsRegistryReader dispatches text-record reads across every configured
-// Polygon-side chain. One RPC client + bound contract per chain are built at
-// construction time; the contract address comes from the code-managed
-// AgentEnsRegistriesSettings (not operator-facing config).
 type AgentEnsRegistryReader struct {
 	bindings map[uint64]*abi.AgentEnsRegistry
 }
@@ -61,8 +57,6 @@ func NewAgentEnsRegistryReader(
 	return &AgentEnsRegistryReader{bindings: bindings}
 }
 
-// Text routes to the chain's bound registry and reads the record. Returns an
-// error for an unconfigured chain id.
 func (r *AgentEnsRegistryReader) Text(ctx context.Context, chainId uint64, node [32]byte, key string) (string, error) {
 	binding, ok := r.bindings[chainId]
 	if !ok {

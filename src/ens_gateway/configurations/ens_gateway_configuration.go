@@ -46,9 +46,6 @@ func AddEnsGatewayConfiguration(container *dig.Container) {
 	}
 }
 
-// newSigner parses the configured signing key into a PrivateKeySigner. The
-// SignerInterface seam means a future proof-based builder can swap this out
-// without changing the use case or controller.
 func newSigner(
 	logger *zap.Logger,
 	signedResponseSettings *ens_gateway_settings.SignedResponseSettings,

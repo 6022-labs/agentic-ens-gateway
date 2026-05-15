@@ -1,5 +1,5 @@
 {
-  "_comment": "Per-chain AgentEnsRegistry contract addresses, baked into the build. Add an entry when the registry is deployed on a new chain; empty addresses are treated as 'not yet deployed' and that chain will be unsupported until the file is filled and the gateway is rebuilt.",
+  "_comment": "Per-chain AgentEnsRegistry addresses. Empty entries are skipped.",
   "registries": [
     {
       "chainId": 137,

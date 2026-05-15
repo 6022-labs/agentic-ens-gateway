@@ -21,10 +21,7 @@ type agentEnsRegistriesFile struct {
 	Registries []agentEnsRegistryEntry `json:"registries"`
 }
 
-// AgentEnsRegistriesSettings holds the AgentEnsRegistry contract address per
-// chain, resolved from the built-in (code-managed) registry file. This is not
-// operator-facing config — it ships with the build. Empty entries are skipped
-// (treated as 'not yet deployed on this chain').
+// Per-chain AgentEnsRegistry addresses baked into the build (not operator config).
 type AgentEnsRegistriesSettings map[uint64]common.Address
 
 func NewAgentEnsRegistriesSettings(logger *zap.Logger) *AgentEnsRegistriesSettings {
@@ -52,7 +49,6 @@ func NewAgentEnsRegistriesSettings(logger *zap.Logger) *AgentEnsRegistriesSettin
 	return &settings
 }
 
-// Get returns the registry address for `chainId` and whether it was configured.
 func (s *AgentEnsRegistriesSettings) Get(chainId uint64) (common.Address, bool) {
 	if s == nil {
 		return common.Address{}, false

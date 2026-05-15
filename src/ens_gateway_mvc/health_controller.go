@@ -17,9 +17,7 @@ func (c *HealthController) RegisterRoutes(app fiber.Router) {
 	app.Get(HealthEndpoint, c.GetHealth)
 }
 
-// GetHealth reports gateway liveness.
 // @Summary Health check
-// @Description Liveness probe for the ENS gateway.
 // @Tags Health
 // @Produce json
 // @Success 200 {object} responses.GetHealthResponse
