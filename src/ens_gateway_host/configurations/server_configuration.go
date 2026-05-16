@@ -2,7 +2,6 @@ package configurations
 
 import (
 	_ "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/docs"
-	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/settings"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
 	fiberzap "github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/fiber/v2"
@@ -11,6 +10,8 @@ import (
 	"go.uber.org/dig"
 	"go.uber.org/zap"
 )
+
+const appName = "ENS-Gateway"
 
 func ConfigureServer(container *dig.Container) {
 	if err := container.Provide(newHttpServer); err != nil {
@@ -22,9 +23,9 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer() *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName: hostSettings.AppName,
+		AppName: appName,
 		Network: "tcp",
 	})
 }
