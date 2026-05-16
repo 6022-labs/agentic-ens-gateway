@@ -19,7 +19,6 @@ func TestWhenLoadingHostSettings(t *testing.T) {
 		k := koanf.New(".")
 		_ = k.Load(confmap.Provider(map[string]any{
 			"host.api_port": 8080,
-			"host.app_name": "ens-gateway",
 		}, "."), nil)
 
 		t.Run("Should load every field as provided", func(t *testing.T) {
@@ -28,7 +27,6 @@ func TestWhenLoadingHostSettings(t *testing.T) {
 			result := host_settings.NewHostSettings(zap.NewNop(), k)
 
 			assert.Equal(t, 8080, result.ApiPort)
-			assert.Equal(t, "ens-gateway", result.AppName)
 		})
 	})
 
@@ -36,9 +34,7 @@ func TestWhenLoadingHostSettings(t *testing.T) {
 		t.Parallel()
 
 		k := koanf.New(".")
-		_ = k.Load(confmap.Provider(map[string]any{
-			"host.app_name": "ens-gateway",
-		}, "."), nil)
+		_ = k.Load(confmap.Provider(map[string]any{}, "."), nil)
 
 		t.Run("Should default to 5000", func(t *testing.T) {
 			t.Parallel()
