@@ -4,7 +4,7 @@ ERC-3668 / CCIP-Read gateway for agent ENS records.
 
 Agent text records (`agent.runtime-url`, `agent.runtime-kind`) are stored
 on-chain in `AgentEnsRegistry` contracts on one or more EVM chains. On Ethereum
-L1, the `AgentOffchainResolver` contract reverts with `OffchainLookup` per
+L1, the `AgentEnsOffchainResolver` contract reverts with `OffchainLookup` per
 ERC-3668, and a CCIP-Read client calls this gateway. The gateway:
 
 1. Decodes the resolver's `IResolverService.resolve(bytes name, bytes data)`
