@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -45,51 +46,73 @@ func NewResolverServiceCodec() *ResolverServiceCodec {
 // Decode unwraps the outer IResolverService.resolve(bytes name, bytes data) call,
 // extracts the chain id from a fixed label of the DNS-encoded name, and decodes
 // the inner text(bytes32 node, string key) query.
-func (c *ResolverServiceCodec) Decode(callData []byte) (chainId uint64, node [32]byte, key string, err error) {
+func (c *ResolverServiceCodec) Decode(callData []byte) (ens_gateway_interfaces.DecodedQuery, error) {
 	if len(callData) < 4 || !bytes.Equal(callData[:4], resolveSelector) {
-		return 0, node, "", fmt.Errorf("unexpected call data selector, want resolve(bytes,bytes)")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("unexpected call data selector, want resolve(bytes,bytes)")
 	}
 
 	outer, err := c.resolveArgs.Unpack(callData[4:])
 	if err != nil {
-		return 0, node, "", fmt.Errorf("decode resolve(bytes,bytes): %w", err)
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode resolve(bytes,bytes): %w", err)
 	}
 	name, ok := outer[0].([]byte)
 	if !ok {
-		return 0, node, "", fmt.Errorf("decode resolve(bytes,bytes): name is not bytes")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode resolve(bytes,bytes): name is not bytes")
 	}
 	innerData, ok := outer[1].([]byte)
 	if !ok {
-		return 0, node, "", fmt.Errorf("decode resolve(bytes,bytes): inner data is not bytes")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode resolve(bytes,bytes): inner data is not bytes")
 	}
 
-	chainId, err = extractChainIdFromDnsName(name, chainIdLabelIndex)
+	chainId, err := extractChainIdFromDnsName(name, chainIdLabelIndex)
 	if err != nil {
-		return 0, node, "", fmt.Errorf("extract chain id: %w", err)
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("extract chain id: %w", err)
 	}
 
 	if len(innerData) < 4 || !bytes.Equal(innerData[:4], textSelector) {
-		return 0, node, "", fmt.Errorf("unexpected inner selector, want text(bytes32,string)")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("unexpected inner selector, want text(bytes32,string)")
 	}
 
 	inner, err := c.textArgs.Unpack(innerData[4:])
 	if err != nil {
-		return 0, node, "", fmt.Errorf("decode text(bytes32,string): %w", err)
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode text(bytes32,string): %w", err)
 	}
-	node, ok = inner[0].([32]byte)
+	node, ok := inner[0].([32]byte)
 	if !ok {
-		return 0, node, "", fmt.Errorf("decode text(bytes32,string): node is not bytes32")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode text(bytes32,string): node is not bytes32")
 	}
-	key, ok = inner[1].(string)
+	key, ok := inner[1].(string)
 	if !ok {
-		return 0, node, "", fmt.Errorf("decode text(bytes32,string): key is not string")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode text(bytes32,string): key is not string")
 	}
-	return chainId, node, key, nil
+	return ens_gateway_interfaces.DecodedQuery{
+		ChainId:   chainId,
+		Node:      node,
+		Key:       key,
+		DnsName:   name,
+		InnerData: innerData,
+	}, nil
 }
 
 // EncodeResult ABI-encodes a resolved text value as the resolver result bytes.
 func (c *ResolverServiceCodec) EncodeResult(value string) ([]byte, error) {
 	return c.resultArgs.Pack(value)
+}
+
+// DecodeTextResult is the inverse of EncodeResult.
+func (c *ResolverServiceCodec) DecodeTextResult(result []byte) (string, error) {
+	if len(result) == 0 {
+		return "", nil
+	}
+	unpacked, err := c.resultArgs.Unpack(result)
+	if err != nil {
+		return "", fmt.Errorf("decode text result: %w", err)
+	}
+	value, ok := unpacked[0].(string)
+	if !ok {
+		return "", fmt.Errorf("decode text result: not a string")
+	}
+	return value, nil
 }
 
 // extractChainIdFromDnsName parses a DNS-encoded ENS name (length-prefixed

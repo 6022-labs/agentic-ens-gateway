@@ -1,6 +1,15 @@
 package interfaces
 
+type DecodedQuery struct {
+	ChainId   uint64
+	Node      [32]byte
+	Key       string
+	DnsName   []byte
+	InnerData []byte
+}
+
 type ResolverServiceCodecInterface interface {
-	Decode(callData []byte) (chainId uint64, node [32]byte, key string, err error)
+	Decode(callData []byte) (DecodedQuery, error)
 	EncodeResult(value string) ([]byte, error)
+	DecodeTextResult(result []byte) (string, error)
 }

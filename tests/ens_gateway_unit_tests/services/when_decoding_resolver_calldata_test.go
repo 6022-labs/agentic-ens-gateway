@@ -44,18 +44,21 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 	t.Run("Given valid resolve+text call data with a chain-id label", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should decode the chain id, node and key", func(t *testing.T) {
+		t.Run("Should decode the chain id, node, key, dns name and inner data", func(t *testing.T) {
 			t.Parallel()
 
 			sut := gateway_services.NewResolverServiceCodec()
-			callData := resolveCalldata(validName, textCalldata(node, key))
+			inner := textCalldata(node, key)
+			callData := resolveCalldata(validName, inner)
 
-			gotChainId, gotNode, gotKey, err := sut.Decode(callData)
+			got, err := sut.Decode(callData)
 
 			assert.NoError(t, err)
-			assert.Equal(t, uint64(137), gotChainId)
-			assert.Equal(t, node, gotNode)
-			assert.Equal(t, key, gotKey)
+			assert.Equal(t, uint64(137), got.ChainId)
+			assert.Equal(t, node, got.Node)
+			assert.Equal(t, key, got.Key)
+			assert.Equal(t, validName, got.DnsName)
+			assert.Equal(t, inner, got.InnerData)
 		})
 	})
 
@@ -67,7 +70,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 
 			sut := gateway_services.NewResolverServiceCodec()
 
-			_, _, _, err := sut.Decode([]byte{0xde, 0xad, 0xbe, 0xef})
+			_, err := sut.Decode([]byte{0xde, 0xad, 0xbe, 0xef})
 
 			assert.Error(t, err)
 		})
@@ -82,7 +85,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 			sut := gateway_services.NewResolverServiceCodec()
 			callData := resolveCalldata(validName, []byte{0x11, 0x22, 0x33, 0x44})
 
-			_, _, _, err := sut.Decode(callData)
+			_, err := sut.Decode(callData)
 
 			assert.Error(t, err)
 		})
@@ -96,7 +99,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 
 			sut := gateway_services.NewResolverServiceCodec()
 
-			_, _, _, err := sut.Decode([]byte{0x01, 0x02})
+			_, err := sut.Decode([]byte{0x01, 0x02})
 
 			assert.Error(t, err)
 		})
@@ -112,7 +115,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 			shortName := dnsEncode("only", "two")
 			callData := resolveCalldata(shortName, textCalldata(node, key))
 
-			_, _, _, err := sut.Decode(callData)
+			_, err := sut.Decode(callData)
 
 			assert.Error(t, err)
 		})
@@ -128,7 +131,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 			badName := dnsEncode("myagent", "test-collection", "notanumber", "protocol6022", "eth")
 			callData := resolveCalldata(badName, textCalldata(node, key))
 
-			_, _, _, err := sut.Decode(callData)
+			_, err := sut.Decode(callData)
 
 			assert.Error(t, err)
 		})
@@ -149,6 +152,42 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 			unpacked, err := abi.Arguments{{Type: stringType}}.Unpack(encoded)
 			assert.NoError(t, err)
 			assert.Equal(t, "https://agent.example/", unpacked[0])
+		})
+	})
+
+	t.Run("Given an encoded text result", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should decode back to the same string", func(t *testing.T) {
+			t.Parallel()
+
+			sut := gateway_services.NewResolverServiceCodec()
+
+			encoded, err := sut.EncodeResult("https://agent.example/")
+			assert.NoError(t, err)
+
+			decoded, err := sut.DecodeTextResult(encoded)
+			assert.NoError(t, err)
+			assert.Equal(t, "https://agent.example/", decoded)
+		})
+
+		t.Run("Should treat empty bytes as empty string without error", func(t *testing.T) {
+			t.Parallel()
+
+			sut := gateway_services.NewResolverServiceCodec()
+
+			decoded, err := sut.DecodeTextResult(nil)
+			assert.NoError(t, err)
+			assert.Equal(t, "", decoded)
+		})
+
+		t.Run("Should return an error on malformed bytes", func(t *testing.T) {
+			t.Parallel()
+
+			sut := gateway_services.NewResolverServiceCodec()
+
+			_, err := sut.DecodeTextResult([]byte{0xff, 0xff, 0xff})
+			assert.Error(t, err)
 		})
 	})
 }
