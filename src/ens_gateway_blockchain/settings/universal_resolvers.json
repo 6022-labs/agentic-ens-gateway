@@ -1,0 +1,15 @@
+{
+  "resolvers": [
+    { "chainId": 1, "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe" },
+    {
+      "chainId": 11155111,
+      "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe"
+    }
+  ],
+  "mappings": [
+    { "sourceChainId": 1, "universalResolverChainId": 1 },
+    { "sourceChainId": 137, "universalResolverChainId": 1 },
+    { "sourceChainId": 80002, "universalResolverChainId": 11155111 },
+    { "sourceChainId": 11155111, "universalResolverChainId": 11155111 }
+  ]
+}

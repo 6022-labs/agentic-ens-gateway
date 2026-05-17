@@ -16,9 +16,20 @@ func AddEnsGatewayBlockchainConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	if err := container.Provide(blockchain_settings.NewUniversalResolverSettings); err != nil {
+		panic(err)
+	}
+
 	if err := container.Provide(
 		blockchain_services.NewAgentEnsRegistryReader,
 		dig.As(new(ens_gateway_interfaces.AgentEnsRegistryReaderInterface)),
+	); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(
+		blockchain_services.NewUniversalResolverClient,
+		dig.As(new(ens_gateway_interfaces.UniversalResolverClientInterface)),
 	); err != nil {
 		panic(err)
 	}

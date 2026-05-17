@@ -12,6 +12,7 @@ package interfaces_mocks
 import (
 	reflect "reflect"
 
+	interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,20 +41,33 @@ func (m *MockResolverServiceCodecInterface) EXPECT() *MockResolverServiceCodecIn
 }
 
 // Decode mocks base method.
-func (m *MockResolverServiceCodecInterface) Decode(callData []byte) (uint64, [32]byte, string, error) {
+func (m *MockResolverServiceCodecInterface) Decode(callData []byte) (interfaces.DecodedQuery, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Decode", callData)
-	ret0, _ := ret[0].(uint64)
-	ret1, _ := ret[1].([32]byte)
-	ret2, _ := ret[2].(string)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
+	ret0, _ := ret[0].(interfaces.DecodedQuery)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Decode indicates an expected call of Decode.
 func (mr *MockResolverServiceCodecInterfaceMockRecorder) Decode(callData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decode", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).Decode), callData)
+}
+
+// DecodeTextResult mocks base method.
+func (m *MockResolverServiceCodecInterface) DecodeTextResult(result []byte) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DecodeTextResult", result)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DecodeTextResult indicates an expected call of DecodeTextResult.
+func (mr *MockResolverServiceCodecInterfaceMockRecorder) DecodeTextResult(result any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecodeTextResult", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).DecodeTextResult), result)
 }
 
 // EncodeResult mocks base method.
