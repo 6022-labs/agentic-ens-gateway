@@ -1,7 +1,12 @@
 package interfaces
 
-import "context"
+import (
+	"context"
+
+	"github.com/ethereum/go-ethereum/common"
+)
 
 type UniversalResolverClientInterface interface {
-	Resolve(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (string, error)
+	ResolveText(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (string, error)
+	ResolveAddr(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (common.Address, error)
 }

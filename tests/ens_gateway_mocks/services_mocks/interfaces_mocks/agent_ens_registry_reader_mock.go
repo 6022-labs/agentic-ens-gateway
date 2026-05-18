@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	common "github.com/ethereum/go-ethereum/common"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -38,6 +39,21 @@ func NewMockAgentEnsRegistryReaderInterface(ctrl *gomock.Controller) *MockAgentE
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockAgentEnsRegistryReaderInterface) EXPECT() *MockAgentEnsRegistryReaderInterfaceMockRecorder {
 	return m.recorder
+}
+
+// Addr mocks base method.
+func (m *MockAgentEnsRegistryReaderInterface) Addr(ctx context.Context, chainId uint64, node [32]byte) (common.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Addr", ctx, chainId, node)
+	ret0, _ := ret[0].(common.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Addr indicates an expected call of Addr.
+func (mr *MockAgentEnsRegistryReaderInterfaceMockRecorder) Addr(ctx, chainId, node any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Addr", reflect.TypeOf((*MockAgentEnsRegistryReaderInterface)(nil).Addr), ctx, chainId, node)
 }
 
 // Text mocks base method.

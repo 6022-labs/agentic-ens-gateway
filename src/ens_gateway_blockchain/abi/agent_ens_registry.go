@@ -29,9 +29,15 @@ var (
 	_ = abi.ConvertType
 )
 
+// KeyValue is an auto generated low-level Go binding around an user-defined struct.
+type KeyValue struct {
+	Key   string
+	Value string
+}
+
 // AgentEnsRegistryMetaData contains all meta data concerning the AgentEnsRegistry contract.
 var AgentEnsRegistryMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"managerAddress\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"parentNode_\",\"type\":\"bytes32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"DisallowedKey\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"label\",\"type\":\"string\"}],\"name\":\"InvalidLabel\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"NotAgentOwner\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"}],\"name\":\"UnknownCollection\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"AgentTextUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"bool\",\"name\":\"allowed\",\"type\":\"bool\"}],\"name\":\"AllowedKeyUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newManager\",\"type\":\"address\"}],\"name\":\"ManagerUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newParentNode\",\"type\":\"bytes32\"}],\"name\":\"ParentNodeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"label\",\"type\":\"string\"}],\"name\":\"SubnodeProvisioned\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"KEY_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"name\":\"allowedKeys\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"manager\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"parentNode\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"provisioned\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"setAgentText\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"bool\",\"name\":\"allowed\",\"type\":\"bool\"}],\"name\":\"setAllowedKey\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newManager\",\"type\":\"address\"}],\"name\":\"setManager\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"newParentNode\",\"type\":\"bytes32\"}],\"name\":\"setParentNode\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"text\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"managerAddress\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"parentNode_\",\"type\":\"bytes32\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"AlreadyProvisioned\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"label\",\"type\":\"string\"}],\"name\":\"InvalidLabel\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"MissingRequiredKey\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"caller\",\"type\":\"address\"}],\"name\":\"NotAgentOwnerOrWallet\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"name\":\"NotProvisioned\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"ReservedKey\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"}],\"name\":\"UnknownCollection\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"AgentTextUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"newManager\",\"type\":\"address\"}],\"name\":\"ManagerUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newParentNode\",\"type\":\"bytes32\"}],\"name\":\"ParentNodeUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"label\",\"type\":\"string\"}],\"name\":\"SubnodeProvisioned\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"}],\"name\":\"addr\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"agentRef\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"internalType\":\"structKeyValue[]\",\"name\":\"records\",\"type\":\"tuple[]\"}],\"name\":\"initAgentTexts\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"manager\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"parentNode\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"name\":\"provisioned\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"collection\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"tokenId\",\"type\":\"uint256\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"},{\"internalType\":\"string\",\"name\":\"value\",\"type\":\"string\"}],\"name\":\"setAgentText\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"newManager\",\"type\":\"address\"}],\"name\":\"setManager\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"newParentNode\",\"type\":\"bytes32\"}],\"name\":\"setParentNode\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"node\",\"type\":\"bytes32\"},{\"internalType\":\"string\",\"name\":\"key\",\"type\":\"string\"}],\"name\":\"text\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // AgentEnsRegistryABI is the input ABI used to generate the binding from.
@@ -211,66 +217,80 @@ func (_AgentEnsRegistry *AgentEnsRegistryCallerSession) DEFAULTADMINROLE() ([32]
 	return _AgentEnsRegistry.Contract.DEFAULTADMINROLE(&_AgentEnsRegistry.CallOpts)
 }
 
-// KEYADMINROLE is a free data retrieval call binding the contract method 0x09fe0387.
+// Addr is a free data retrieval call binding the contract method 0x3b3b57de.
 //
-// Solidity: function KEY_ADMIN_ROLE() view returns(bytes32)
-func (_AgentEnsRegistry *AgentEnsRegistryCaller) KEYADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
+// Solidity: function addr(bytes32 node) view returns(address)
+func (_AgentEnsRegistry *AgentEnsRegistryCaller) Addr(opts *bind.CallOpts, node [32]byte) (common.Address, error) {
 	var out []interface{}
-	err := _AgentEnsRegistry.contract.Call(opts, &out, "KEY_ADMIN_ROLE")
+	err := _AgentEnsRegistry.contract.Call(opts, &out, "addr", node)
 
 	if err != nil {
-		return *new([32]byte), err
+		return *new(common.Address), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
 
 }
 
-// KEYADMINROLE is a free data retrieval call binding the contract method 0x09fe0387.
+// Addr is a free data retrieval call binding the contract method 0x3b3b57de.
 //
-// Solidity: function KEY_ADMIN_ROLE() view returns(bytes32)
-func (_AgentEnsRegistry *AgentEnsRegistrySession) KEYADMINROLE() ([32]byte, error) {
-	return _AgentEnsRegistry.Contract.KEYADMINROLE(&_AgentEnsRegistry.CallOpts)
+// Solidity: function addr(bytes32 node) view returns(address)
+func (_AgentEnsRegistry *AgentEnsRegistrySession) Addr(node [32]byte) (common.Address, error) {
+	return _AgentEnsRegistry.Contract.Addr(&_AgentEnsRegistry.CallOpts, node)
 }
 
-// KEYADMINROLE is a free data retrieval call binding the contract method 0x09fe0387.
+// Addr is a free data retrieval call binding the contract method 0x3b3b57de.
 //
-// Solidity: function KEY_ADMIN_ROLE() view returns(bytes32)
-func (_AgentEnsRegistry *AgentEnsRegistryCallerSession) KEYADMINROLE() ([32]byte, error) {
-	return _AgentEnsRegistry.Contract.KEYADMINROLE(&_AgentEnsRegistry.CallOpts)
+// Solidity: function addr(bytes32 node) view returns(address)
+func (_AgentEnsRegistry *AgentEnsRegistryCallerSession) Addr(node [32]byte) (common.Address, error) {
+	return _AgentEnsRegistry.Contract.Addr(&_AgentEnsRegistry.CallOpts, node)
 }
 
-// AllowedKeys is a free data retrieval call binding the contract method 0x32b044f0.
+// AgentRef is a free data retrieval call binding the contract method 0x0dd323f7.
 //
-// Solidity: function allowedKeys(string ) view returns(bool)
-func (_AgentEnsRegistry *AgentEnsRegistryCaller) AllowedKeys(opts *bind.CallOpts, arg0 string) (bool, error) {
+// Solidity: function agentRef(bytes32 ) view returns(address collection, uint256 tokenId)
+func (_AgentEnsRegistry *AgentEnsRegistryCaller) AgentRef(opts *bind.CallOpts, arg0 [32]byte) (struct {
+	Collection common.Address
+	TokenId    *big.Int
+}, error) {
 	var out []interface{}
-	err := _AgentEnsRegistry.contract.Call(opts, &out, "allowedKeys", arg0)
+	err := _AgentEnsRegistry.contract.Call(opts, &out, "agentRef", arg0)
 
+	outstruct := new(struct {
+		Collection common.Address
+		TokenId    *big.Int
+	})
 	if err != nil {
-		return *new(bool), err
+		return *outstruct, err
 	}
 
-	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+	outstruct.Collection = *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+	outstruct.TokenId = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
 
-	return out0, err
+	return *outstruct, err
 
 }
 
-// AllowedKeys is a free data retrieval call binding the contract method 0x32b044f0.
+// AgentRef is a free data retrieval call binding the contract method 0x0dd323f7.
 //
-// Solidity: function allowedKeys(string ) view returns(bool)
-func (_AgentEnsRegistry *AgentEnsRegistrySession) AllowedKeys(arg0 string) (bool, error) {
-	return _AgentEnsRegistry.Contract.AllowedKeys(&_AgentEnsRegistry.CallOpts, arg0)
+// Solidity: function agentRef(bytes32 ) view returns(address collection, uint256 tokenId)
+func (_AgentEnsRegistry *AgentEnsRegistrySession) AgentRef(arg0 [32]byte) (struct {
+	Collection common.Address
+	TokenId    *big.Int
+}, error) {
+	return _AgentEnsRegistry.Contract.AgentRef(&_AgentEnsRegistry.CallOpts, arg0)
 }
 
-// AllowedKeys is a free data retrieval call binding the contract method 0x32b044f0.
+// AgentRef is a free data retrieval call binding the contract method 0x0dd323f7.
 //
-// Solidity: function allowedKeys(string ) view returns(bool)
-func (_AgentEnsRegistry *AgentEnsRegistryCallerSession) AllowedKeys(arg0 string) (bool, error) {
-	return _AgentEnsRegistry.Contract.AllowedKeys(&_AgentEnsRegistry.CallOpts, arg0)
+// Solidity: function agentRef(bytes32 ) view returns(address collection, uint256 tokenId)
+func (_AgentEnsRegistry *AgentEnsRegistryCallerSession) AgentRef(arg0 [32]byte) (struct {
+	Collection common.Address
+	TokenId    *big.Int
+}, error) {
+	return _AgentEnsRegistry.Contract.AgentRef(&_AgentEnsRegistry.CallOpts, arg0)
 }
 
 // GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
@@ -511,6 +531,27 @@ func (_AgentEnsRegistry *AgentEnsRegistryTransactorSession) GrantRole(role [32]b
 	return _AgentEnsRegistry.Contract.GrantRole(&_AgentEnsRegistry.TransactOpts, role, account)
 }
 
+// InitAgentTexts is a paid mutator transaction binding the contract method 0x41877a90.
+//
+// Solidity: function initAgentTexts(address collection, uint256 tokenId, (string,string)[] records) returns()
+func (_AgentEnsRegistry *AgentEnsRegistryTransactor) InitAgentTexts(opts *bind.TransactOpts, collection common.Address, tokenId *big.Int, records []KeyValue) (*types.Transaction, error) {
+	return _AgentEnsRegistry.contract.Transact(opts, "initAgentTexts", collection, tokenId, records)
+}
+
+// InitAgentTexts is a paid mutator transaction binding the contract method 0x41877a90.
+//
+// Solidity: function initAgentTexts(address collection, uint256 tokenId, (string,string)[] records) returns()
+func (_AgentEnsRegistry *AgentEnsRegistrySession) InitAgentTexts(collection common.Address, tokenId *big.Int, records []KeyValue) (*types.Transaction, error) {
+	return _AgentEnsRegistry.Contract.InitAgentTexts(&_AgentEnsRegistry.TransactOpts, collection, tokenId, records)
+}
+
+// InitAgentTexts is a paid mutator transaction binding the contract method 0x41877a90.
+//
+// Solidity: function initAgentTexts(address collection, uint256 tokenId, (string,string)[] records) returns()
+func (_AgentEnsRegistry *AgentEnsRegistryTransactorSession) InitAgentTexts(collection common.Address, tokenId *big.Int, records []KeyValue) (*types.Transaction, error) {
+	return _AgentEnsRegistry.Contract.InitAgentTexts(&_AgentEnsRegistry.TransactOpts, collection, tokenId, records)
+}
+
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
 // Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
@@ -572,27 +613,6 @@ func (_AgentEnsRegistry *AgentEnsRegistrySession) SetAgentText(collection common
 // Solidity: function setAgentText(address collection, uint256 tokenId, string key, string value) returns()
 func (_AgentEnsRegistry *AgentEnsRegistryTransactorSession) SetAgentText(collection common.Address, tokenId *big.Int, key string, value string) (*types.Transaction, error) {
 	return _AgentEnsRegistry.Contract.SetAgentText(&_AgentEnsRegistry.TransactOpts, collection, tokenId, key, value)
-}
-
-// SetAllowedKey is a paid mutator transaction binding the contract method 0x80a55a5e.
-//
-// Solidity: function setAllowedKey(string key, bool allowed) returns()
-func (_AgentEnsRegistry *AgentEnsRegistryTransactor) SetAllowedKey(opts *bind.TransactOpts, key string, allowed bool) (*types.Transaction, error) {
-	return _AgentEnsRegistry.contract.Transact(opts, "setAllowedKey", key, allowed)
-}
-
-// SetAllowedKey is a paid mutator transaction binding the contract method 0x80a55a5e.
-//
-// Solidity: function setAllowedKey(string key, bool allowed) returns()
-func (_AgentEnsRegistry *AgentEnsRegistrySession) SetAllowedKey(key string, allowed bool) (*types.Transaction, error) {
-	return _AgentEnsRegistry.Contract.SetAllowedKey(&_AgentEnsRegistry.TransactOpts, key, allowed)
-}
-
-// SetAllowedKey is a paid mutator transaction binding the contract method 0x80a55a5e.
-//
-// Solidity: function setAllowedKey(string key, bool allowed) returns()
-func (_AgentEnsRegistry *AgentEnsRegistryTransactorSession) SetAllowedKey(key string, allowed bool) (*types.Transaction, error) {
-	return _AgentEnsRegistry.Contract.SetAllowedKey(&_AgentEnsRegistry.TransactOpts, key, allowed)
 }
 
 // SetManager is a paid mutator transaction binding the contract method 0xd0ebdbe7.
@@ -786,141 +806,6 @@ func (_AgentEnsRegistry *AgentEnsRegistryFilterer) WatchAgentTextUpdated(opts *b
 func (_AgentEnsRegistry *AgentEnsRegistryFilterer) ParseAgentTextUpdated(log types.Log) (*AgentEnsRegistryAgentTextUpdated, error) {
 	event := new(AgentEnsRegistryAgentTextUpdated)
 	if err := _AgentEnsRegistry.contract.UnpackLog(event, "AgentTextUpdated", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
-}
-
-// AgentEnsRegistryAllowedKeyUpdatedIterator is returned from FilterAllowedKeyUpdated and is used to iterate over the raw logs and unpacked data for AllowedKeyUpdated events raised by the AgentEnsRegistry contract.
-type AgentEnsRegistryAllowedKeyUpdatedIterator struct {
-	Event *AgentEnsRegistryAllowedKeyUpdated // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *AgentEnsRegistryAllowedKeyUpdatedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(AgentEnsRegistryAllowedKeyUpdated)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(AgentEnsRegistryAllowedKeyUpdated)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *AgentEnsRegistryAllowedKeyUpdatedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *AgentEnsRegistryAllowedKeyUpdatedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// AgentEnsRegistryAllowedKeyUpdated represents a AllowedKeyUpdated event raised by the AgentEnsRegistry contract.
-type AgentEnsRegistryAllowedKeyUpdated struct {
-	Key     string
-	Allowed bool
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterAllowedKeyUpdated is a free log retrieval operation binding the contract event 0x79d2492409b4711df90784c8ca8980d29768b519f8b76ae642c4ef5c6ef44591.
-//
-// Solidity: event AllowedKeyUpdated(string key, bool allowed)
-func (_AgentEnsRegistry *AgentEnsRegistryFilterer) FilterAllowedKeyUpdated(opts *bind.FilterOpts) (*AgentEnsRegistryAllowedKeyUpdatedIterator, error) {
-
-	logs, sub, err := _AgentEnsRegistry.contract.FilterLogs(opts, "AllowedKeyUpdated")
-	if err != nil {
-		return nil, err
-	}
-	return &AgentEnsRegistryAllowedKeyUpdatedIterator{contract: _AgentEnsRegistry.contract, event: "AllowedKeyUpdated", logs: logs, sub: sub}, nil
-}
-
-// WatchAllowedKeyUpdated is a free log subscription operation binding the contract event 0x79d2492409b4711df90784c8ca8980d29768b519f8b76ae642c4ef5c6ef44591.
-//
-// Solidity: event AllowedKeyUpdated(string key, bool allowed)
-func (_AgentEnsRegistry *AgentEnsRegistryFilterer) WatchAllowedKeyUpdated(opts *bind.WatchOpts, sink chan<- *AgentEnsRegistryAllowedKeyUpdated) (event.Subscription, error) {
-
-	logs, sub, err := _AgentEnsRegistry.contract.WatchLogs(opts, "AllowedKeyUpdated")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(AgentEnsRegistryAllowedKeyUpdated)
-				if err := _AgentEnsRegistry.contract.UnpackLog(event, "AllowedKeyUpdated", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParseAllowedKeyUpdated is a log parse operation binding the contract event 0x79d2492409b4711df90784c8ca8980d29768b519f8b76ae642c4ef5c6ef44591.
-//
-// Solidity: event AllowedKeyUpdated(string key, bool allowed)
-func (_AgentEnsRegistry *AgentEnsRegistryFilterer) ParseAllowedKeyUpdated(log types.Log) (*AgentEnsRegistryAllowedKeyUpdated, error) {
-	event := new(AgentEnsRegistryAllowedKeyUpdated)
-	if err := _AgentEnsRegistry.contract.UnpackLog(event, "AllowedKeyUpdated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
@@ -1866,7 +1751,6 @@ func (_AgentEnsRegistry *AgentEnsRegistryFilterer) ParseSubnodeProvisioned(log t
 
 // --- RawLog() methods added by go generate ---
 func (e AgentEnsRegistryAgentTextUpdated) RawLog() types.Log { return e.Raw }
-func (e AgentEnsRegistryAllowedKeyUpdated) RawLog() types.Log { return e.Raw }
 func (e AgentEnsRegistryManagerUpdated) RawLog() types.Log { return e.Raw }
 func (e AgentEnsRegistryParentNodeUpdated) RawLog() types.Log { return e.Raw }
 func (e AgentEnsRegistryRoleAdminChanged) RawLog() types.Log { return e.Raw }

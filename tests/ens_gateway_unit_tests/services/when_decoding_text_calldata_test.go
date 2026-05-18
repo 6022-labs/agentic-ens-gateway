@@ -4,10 +4,13 @@ import (
 	"testing"
 
 	gateway_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
+	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
+
+// Helpers shared with sibling _test.go files in this package.
 
 func dnsEncode(labels ...string) []byte {
 	var out []byte
@@ -31,12 +34,12 @@ func resolveCalldata(name, data []byte) []byte {
 	return append(crypto.Keccak256([]byte("resolve(bytes,bytes)"))[:4], packed...)
 }
 
-func TestWhenDecodingResolverCalldata(t *testing.T) {
+func TestWhenDecodingTextCalldata(t *testing.T) {
 	t.Parallel()
 
 	var node [32]byte
 	copy(node[:], crypto.Keccak256([]byte("test-node")))
-	const key = "agent.runtime-url"
+	const key = "url"
 
 	// `{agent}.{collection}.{chainId}.protocol6022.eth` — chain id at label index 2.
 	validName := dnsEncode("myagent", "test-collection", "137", "protocol6022", "eth")
@@ -54,6 +57,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 			got, err := sut.Decode(callData)
 
 			assert.NoError(t, err)
+			assert.Equal(t, ens_gateway_interfaces.QueryKindText, got.Kind)
 			assert.Equal(t, uint64(137), got.ChainId)
 			assert.Equal(t, node, got.Node)
 			assert.Equal(t, key, got.Key)
@@ -145,7 +149,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 
 			sut := gateway_services.NewResolverServiceCodec()
 
-			encoded, err := sut.EncodeResult("https://agent.example/")
+			encoded, err := sut.EncodeTextResult("https://agent.example/")
 			assert.NoError(t, err)
 
 			stringType, _ := abi.NewType("string", "", nil)
@@ -163,7 +167,7 @@ func TestWhenDecodingResolverCalldata(t *testing.T) {
 
 			sut := gateway_services.NewResolverServiceCodec()
 
-			encoded, err := sut.EncodeResult("https://agent.example/")
+			encoded, err := sut.EncodeTextResult("https://agent.example/")
 			assert.NoError(t, err)
 
 			decoded, err := sut.DecodeTextResult(encoded)

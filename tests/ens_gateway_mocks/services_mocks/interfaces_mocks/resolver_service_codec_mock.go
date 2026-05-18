@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 
 	interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
+	common "github.com/ethereum/go-ethereum/common"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -55,6 +56,21 @@ func (mr *MockResolverServiceCodecInterfaceMockRecorder) Decode(callData any) *g
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decode", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).Decode), callData)
 }
 
+// DecodeAddrResult mocks base method.
+func (m *MockResolverServiceCodecInterface) DecodeAddrResult(result []byte) (common.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DecodeAddrResult", result)
+	ret0, _ := ret[0].(common.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DecodeAddrResult indicates an expected call of DecodeAddrResult.
+func (mr *MockResolverServiceCodecInterfaceMockRecorder) DecodeAddrResult(result any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecodeAddrResult", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).DecodeAddrResult), result)
+}
+
 // DecodeTextResult mocks base method.
 func (m *MockResolverServiceCodecInterface) DecodeTextResult(result []byte) (string, error) {
 	m.ctrl.T.Helper()
@@ -70,17 +86,32 @@ func (mr *MockResolverServiceCodecInterfaceMockRecorder) DecodeTextResult(result
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecodeTextResult", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).DecodeTextResult), result)
 }
 
-// EncodeResult mocks base method.
-func (m *MockResolverServiceCodecInterface) EncodeResult(value string) ([]byte, error) {
+// EncodeAddrResult mocks base method.
+func (m *MockResolverServiceCodecInterface) EncodeAddrResult(value common.Address) ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EncodeResult", value)
+	ret := m.ctrl.Call(m, "EncodeAddrResult", value)
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// EncodeResult indicates an expected call of EncodeResult.
-func (mr *MockResolverServiceCodecInterfaceMockRecorder) EncodeResult(value any) *gomock.Call {
+// EncodeAddrResult indicates an expected call of EncodeAddrResult.
+func (mr *MockResolverServiceCodecInterfaceMockRecorder) EncodeAddrResult(value any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EncodeResult", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).EncodeResult), value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EncodeAddrResult", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).EncodeAddrResult), value)
+}
+
+// EncodeTextResult mocks base method.
+func (m *MockResolverServiceCodecInterface) EncodeTextResult(value string) ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EncodeTextResult", value)
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// EncodeTextResult indicates an expected call of EncodeTextResult.
+func (mr *MockResolverServiceCodecInterfaceMockRecorder) EncodeTextResult(value any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EncodeTextResult", reflect.TypeOf((*MockResolverServiceCodecInterface)(nil).EncodeTextResult), value)
 }
