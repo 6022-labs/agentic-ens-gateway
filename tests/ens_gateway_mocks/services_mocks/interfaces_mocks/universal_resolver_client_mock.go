@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	common "github.com/ethereum/go-ethereum/common"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -40,17 +41,32 @@ func (m *MockUniversalResolverClientInterface) EXPECT() *MockUniversalResolverCl
 	return m.recorder
 }
 
-// Resolve mocks base method.
-func (m *MockUniversalResolverClientInterface) Resolve(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (string, error) {
+// ResolveAddr mocks base method.
+func (m *MockUniversalResolverClientInterface) ResolveAddr(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (common.Address, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Resolve", ctx, sourceChainId, dnsName, innerData)
+	ret := m.ctrl.Call(m, "ResolveAddr", ctx, sourceChainId, dnsName, innerData)
+	ret0, _ := ret[0].(common.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ResolveAddr indicates an expected call of ResolveAddr.
+func (mr *MockUniversalResolverClientInterfaceMockRecorder) ResolveAddr(ctx, sourceChainId, dnsName, innerData any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveAddr", reflect.TypeOf((*MockUniversalResolverClientInterface)(nil).ResolveAddr), ctx, sourceChainId, dnsName, innerData)
+}
+
+// ResolveText mocks base method.
+func (m *MockUniversalResolverClientInterface) ResolveText(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ResolveText", ctx, sourceChainId, dnsName, innerData)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Resolve indicates an expected call of Resolve.
-func (mr *MockUniversalResolverClientInterfaceMockRecorder) Resolve(ctx, sourceChainId, dnsName, innerData any) *gomock.Call {
+// ResolveText indicates an expected call of ResolveText.
+func (mr *MockUniversalResolverClientInterfaceMockRecorder) ResolveText(ctx, sourceChainId, dnsName, innerData any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Resolve", reflect.TypeOf((*MockUniversalResolverClientInterface)(nil).Resolve), ctx, sourceChainId, dnsName, innerData)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ResolveText", reflect.TypeOf((*MockUniversalResolverClientInterface)(nil).ResolveText), ctx, sourceChainId, dnsName, innerData)
 }

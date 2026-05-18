@@ -6,6 +6,7 @@ import (
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/abi"
 	blockchain_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/settings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 )
@@ -64,4 +65,13 @@ func (r *AgentEnsRegistryReader) Text(ctx context.Context, chainId uint64, node 
 		return "", nil
 	}
 	return binding.Text(&bind.CallOpts{Context: ctx}, node, key)
+}
+
+// Unbound chain id returns (address(0), nil) so the caller can fall back to L1.
+func (r *AgentEnsRegistryReader) Addr(ctx context.Context, chainId uint64, node [32]byte) (common.Address, error) {
+	binding, ok := r.bindings[chainId]
+	if !ok {
+		return common.Address{}, nil
+	}
+	return binding.Addr(&bind.CallOpts{Context: ctx}, node)
 }

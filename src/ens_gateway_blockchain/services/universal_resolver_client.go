@@ -8,6 +8,7 @@ import (
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/abi"
 	blockchain_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/settings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 )
@@ -78,16 +79,30 @@ func NewUniversalResolverClient(
 	return &UniversalResolverClient{codec: codec, bindings: bindings}
 }
 
-func (c *UniversalResolverClient) Resolve(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (string, error) {
+func (c *UniversalResolverClient) ResolveText(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (string, error) {
+	result, ok, err := c.resolve(ctx, sourceChainId, dnsName, innerData)
+	if err != nil || !ok {
+		return "", err
+	}
+	return c.codec.DecodeTextResult(result)
+}
+
+func (c *UniversalResolverClient) ResolveAddr(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (common.Address, error) {
+	result, ok, err := c.resolve(ctx, sourceChainId, dnsName, innerData)
+	if err != nil || !ok {
+		return common.Address{}, err
+	}
+	return c.codec.DecodeAddrResult(result)
+}
+
+func (c *UniversalResolverClient) resolve(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) ([]byte, bool, error) {
 	binding, ok := c.bindings[sourceChainId]
 	if !ok {
-		return "", nil
+		return nil, false, nil
 	}
-
 	result, _, err := binding.Resolve(&bind.CallOpts{Context: ctx}, dnsName, innerData)
 	if err != nil {
-		return "", fmt.Errorf("universal resolver resolve: %w", err)
+		return nil, false, fmt.Errorf("universal resolver resolve: %w", err)
 	}
-
-	return c.codec.DecodeTextResult(result)
+	return result, true, nil
 }

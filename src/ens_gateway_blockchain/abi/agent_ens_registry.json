@@ -39,12 +39,17 @@
   {
     "inputs": [
       {
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
+        "internalType": "address",
+        "name": "collection",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
-    "name": "DisallowedKey",
+    "name": "AlreadyProvisioned",
     "type": "error"
   },
   {
@@ -56,6 +61,17 @@
       }
     ],
     "name": "InvalidLabel",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "MissingRequiredKey",
     "type": "error"
   },
   {
@@ -76,7 +92,34 @@
         "type": "address"
       }
     ],
-    "name": "NotAgentOwner",
+    "name": "NotAgentOwnerOrWallet",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collection",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      }
+    ],
+    "name": "NotProvisioned",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "key",
+        "type": "string"
+      }
+    ],
+    "name": "ReservedKey",
     "type": "error"
   },
   {
@@ -119,25 +162,6 @@
       }
     ],
     "name": "AgentTextUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "allowed",
-        "type": "bool"
-      }
-    ],
-    "name": "AllowedKeyUpdated",
     "type": "event"
   },
   {
@@ -286,13 +310,19 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "KEY_ADMIN_ROLE",
-    "outputs": [
+    "inputs": [
       {
         "internalType": "bytes32",
-        "name": "",
+        "name": "node",
         "type": "bytes32"
+      }
+    ],
+    "name": "addr",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -301,17 +331,22 @@
   {
     "inputs": [
       {
-        "internalType": "string",
+        "internalType": "bytes32",
         "name": "",
-        "type": "string"
+        "type": "bytes32"
       }
     ],
-    "name": "allowedKeys",
+    "name": "agentRef",
     "outputs": [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        "internalType": "address",
+        "name": "collection",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
       }
     ],
     "stateMutability": "view",
@@ -376,6 +411,41 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "collection",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "tokenId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "string",
+            "name": "key",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "value",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct KeyValue[]",
+        "name": "records",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "initAgentTexts",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -483,24 +553,6 @@
       }
     ],
     "name": "setAgentText",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "key",
-        "type": "string"
-      },
-      {
-        "internalType": "bool",
-        "name": "allowed",
-        "type": "bool"
-      }
-    ],
-    "name": "setAllowedKey",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
