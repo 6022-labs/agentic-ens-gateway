@@ -5,17 +5,10 @@ import (
 
 	gateway_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
-
-func addrCalldata(node [32]byte) []byte {
-	bytes32Type, _ := abi.NewType("bytes32", "", nil)
-	packed, _ := abi.Arguments{{Type: bytes32Type}}.Pack(node)
-	return append(crypto.Keccak256([]byte("addr(bytes32)"))[:4], packed...)
-}
 
 func TestWhenDecodingAddrCalldata(t *testing.T) {
 	t.Parallel()

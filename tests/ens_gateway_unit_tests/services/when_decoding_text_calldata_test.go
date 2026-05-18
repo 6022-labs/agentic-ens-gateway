@@ -10,30 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Helpers shared with sibling _test.go files in this package.
-
-func dnsEncode(labels ...string) []byte {
-	var out []byte
-	for _, l := range labels {
-		out = append(out, byte(len(l)))
-		out = append(out, []byte(l)...)
-	}
-	return append(out, 0x00)
-}
-
-func textCalldata(node [32]byte, key string) []byte {
-	bytes32Type, _ := abi.NewType("bytes32", "", nil)
-	stringType, _ := abi.NewType("string", "", nil)
-	packed, _ := abi.Arguments{{Type: bytes32Type}, {Type: stringType}}.Pack(node, key)
-	return append(crypto.Keccak256([]byte("text(bytes32,string)"))[:4], packed...)
-}
-
-func resolveCalldata(name, data []byte) []byte {
-	bytesType, _ := abi.NewType("bytes", "", nil)
-	packed, _ := abi.Arguments{{Type: bytesType}, {Type: bytesType}}.Pack(name, data)
-	return append(crypto.Keccak256([]byte("resolve(bytes,bytes)"))[:4], packed...)
-}
-
 func TestWhenDecodingTextCalldata(t *testing.T) {
 	t.Parallel()
 
