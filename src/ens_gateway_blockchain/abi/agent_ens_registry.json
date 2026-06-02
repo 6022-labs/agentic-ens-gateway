@@ -56,17 +56,6 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "label",
-        "type": "string"
-      }
-    ],
-    "name": "InvalidLabel",
-    "type": "error"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
         "name": "key",
         "type": "string"
       }
