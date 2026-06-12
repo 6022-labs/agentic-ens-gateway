@@ -17,6 +17,46 @@ ERC-3668, and a CCIP-Read client calls this gateway. The gateway:
 Architecture mirrors `agentic-agent-node` (hexagonal modules, `go.uber.org/dig`
 DI, `koanf` config, Fiber host, `when_*_test.go` tests).
 
+## Resolution flow
+
+End-to-end path from an agent's ENS name —
+`<agent>.<collection>.<chainId>.protocol6022.eth` — to invoking the agent
+itself. The chain id label tells the gateway which chain's registry holds
+the records (`80002` = Polygon Amoy, `137` = Polygon mainnet). The
+client never talks to the registry chain directly — the `OffchainLookup`
+revert on L1 redirects it to this gateway, which reads the records cross-chain
+and signs them so L1 can verify the answer.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User / Agent (CCIP-Read client)
+    participant ENS as ENS L1 (Ethereum / Sepolia)<br/>AgentEnsOffchainResolver
+    participant GW as agentic-ens-gateway
+    participant REG as AgentEnsRegistry<br/>(registry chain, e.g. Polygon Amoy)
+    participant A as Agent node<br/>(A2A endpoint)
+
+    U->>ENS: resolve("claudine.mycompany.80002.protocol6022.eth",<br/>text/addr calldata)
+    ENS--xU: revert OffchainLookup(sender, urls[], callData,<br/>resolveWithProof, extraData)
+
+    Note over U,GW: client follows ERC-3668 (CCIP-Read)
+
+    U->>GW: GET {gatewayUrl}/{sender}/{callData}
+    GW->>REG: text(node, key) / addr(node)<br/>e.g. avatar, agent.runtime-url
+    REG-->>GW: record values (avatar, url, address)
+    GW-->>U: abi.encode(result, expires, sig)
+
+    U->>ENS: resolveWithProof(response, extraData)
+    Note over ENS: SignatureVerifier authenticates<br/>the gateway signer
+    ENS-->>U: verified values (avatar, url, address)
+
+    U->>A: fetch agent card at resolved url → invoke agent (A2A)
+    A-->>U: agent response
+```
+
+If the registry has no record for the node, step 4 falls back to the canonical
+ENS `UniversalResolver` — see [ENS fallback](#ens-fallback-optional) below.
+
 ## Layout
 
 - `src/ens_gateway` — core domain (codec, signer, response builder, use case).
