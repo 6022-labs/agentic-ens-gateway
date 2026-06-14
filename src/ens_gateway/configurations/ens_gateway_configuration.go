@@ -17,6 +17,10 @@ func AddEnsGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	if err := container.Provide(ens_gateway_settings.NewCacheSettings); err != nil {
+		panic(err)
+	}
+
 	if err := container.Provide(
 		newSigner,
 		dig.As(new(ens_gateway_interfaces.SignerInterface)),
@@ -34,6 +38,13 @@ func AddEnsGatewayConfiguration(container *dig.Container) {
 	if err := container.Provide(
 		ens_gateway_services.NewSignedResponseBuilder,
 		dig.As(new(ens_gateway_interfaces.ResponseBuilderInterface)),
+	); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(
+		ens_gateway_services.NewResolutionCache,
+		dig.As(new(ens_gateway_interfaces.ResolutionCacheInterface)),
 	); err != nil {
 		panic(err)
 	}

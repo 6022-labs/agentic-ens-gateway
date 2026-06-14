@@ -5,6 +5,7 @@ import (
 	blockchain_configurations "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/configurations"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/settings"
 	mvc_configurations "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc/configurations"
+	redis_configurations "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_redis/configurations"
 	"github.com/knadh/koanf/v2"
 	"go.uber.org/dig"
 )
@@ -22,6 +23,7 @@ func ConfigureDI(config *koanf.Koanf) *dig.Container {
 	}
 
 	blockchain_configurations.AddEnsGatewayBlockchainConfiguration(container)
+	redis_configurations.AddEnsGatewayRedisConfiguration(container)
 	ens_gateway_configurations.AddEnsGatewayConfiguration(container)
 	mvc_configurations.AddEnsGatewayMvcConfiguration(container)
 
