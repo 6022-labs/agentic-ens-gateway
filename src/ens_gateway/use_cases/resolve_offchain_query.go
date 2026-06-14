@@ -17,29 +17,29 @@ type ResolveOffchainQueryInterface interface {
 }
 
 type ResolveOffchainQuery struct {
-	logger            *zap.Logger
-	codec             ens_gateway_interfaces.ResolverServiceCodecInterface
-	reader            ens_gateway_interfaces.AgentEnsRegistryReaderInterface
-	universalResolver ens_gateway_interfaces.UniversalResolverClientInterface
-	builder           ens_gateway_interfaces.ResponseBuilderInterface
-	cache             ens_gateway_interfaces.ResolutionCacheInterface
+	logger                  *zap.Logger
+	resolverServiceCodec    ens_gateway_interfaces.ResolverServiceCodecInterface
+	agentEnsRegistryReader  ens_gateway_interfaces.AgentEnsRegistryReaderInterface
+	universalResolverClient ens_gateway_interfaces.UniversalResolverClientInterface
+	responseBuilder         ens_gateway_interfaces.ResponseBuilderInterface
+	resolutionCache         ens_gateway_interfaces.ResolutionCacheInterface
 }
 
 func NewResolveOffchainQuery(
 	logger *zap.Logger,
-	codec ens_gateway_interfaces.ResolverServiceCodecInterface,
-	reader ens_gateway_interfaces.AgentEnsRegistryReaderInterface,
-	universalResolver ens_gateway_interfaces.UniversalResolverClientInterface,
-	builder ens_gateway_interfaces.ResponseBuilderInterface,
-	cache ens_gateway_interfaces.ResolutionCacheInterface,
+	resolverServiceCodec ens_gateway_interfaces.ResolverServiceCodecInterface,
+	agentEnsRegistryReader ens_gateway_interfaces.AgentEnsRegistryReaderInterface,
+	universalResolverClient ens_gateway_interfaces.UniversalResolverClientInterface,
+	responseBuilder ens_gateway_interfaces.ResponseBuilderInterface,
+	resolutionCache ens_gateway_interfaces.ResolutionCacheInterface,
 ) *ResolveOffchainQuery {
 	return &ResolveOffchainQuery{
-		logger:            logger,
-		codec:             codec,
-		reader:            reader,
-		universalResolver: universalResolver,
-		builder:           builder,
-		cache:             cache,
+		logger:                  logger,
+		resolverServiceCodec:    resolverServiceCodec,
+		agentEnsRegistryReader:  agentEnsRegistryReader,
+		universalResolverClient: universalResolverClient,
+		responseBuilder:         responseBuilder,
+		resolutionCache:         resolutionCache,
 	}
 }
 
@@ -47,7 +47,7 @@ func (u *ResolveOffchainQuery) Execute(
 	ctx context.Context,
 	request *requests.ResolveOffchainQueryRequest,
 ) (*responses.CcipReadResponse, error) {
-	query, err := u.codec.Decode(request.Data)
+	query, err := u.resolverServiceCodec.Decode(request.Data)
 	if err != nil {
 		return nil, fmt.Errorf("decode call data: %w", err)
 	}
@@ -65,7 +65,7 @@ func (u *ResolveOffchainQuery) Execute(
 		return nil, err
 	}
 
-	signed, err := u.builder.Build(ctx, request.Sender, request.Data, result)
+	signed, err := u.responseBuilder.Build(ctx, request.Sender, request.Data, result)
 	if err != nil {
 		return nil, fmt.Errorf("build signed response: %w", err)
 	}
@@ -79,7 +79,7 @@ func (u *ResolveOffchainQuery) resolveText(ctx context.Context, query ens_gatewa
 		return nil, err
 	}
 
-	encoded, err := u.codec.EncodeTextResult(value)
+	encoded, err := u.resolverServiceCodec.EncodeTextResult(value)
 	if err != nil {
 		return nil, fmt.Errorf("encode text result: %w", err)
 	}
@@ -87,16 +87,16 @@ func (u *ResolveOffchainQuery) resolveText(ctx context.Context, query ens_gatewa
 }
 
 func (u *ResolveOffchainQuery) textValue(ctx context.Context, query ens_gateway_interfaces.DecodedQuery) (string, error) {
-	if cached := u.cache.GetText(query.ChainId, query.Node, query.Key); cached != nil {
+	if cached := u.resolutionCache.GetText(query.ChainId, query.Node, query.Key); cached != nil {
 		return *cached, nil
 	}
 
-	value, err := u.reader.Text(ctx, query.ChainId, query.Node, query.Key)
+	value, err := u.agentEnsRegistryReader.Text(ctx, query.ChainId, query.Node, query.Key)
 	if err != nil {
 		return "", fmt.Errorf("read agent ens registry: %w", err)
 	}
 	if value == "" {
-		fallback, fallbackErr := u.universalResolver.ResolveText(ctx, query.ChainId, query.DnsName, query.InnerData)
+		fallback, fallbackErr := u.universalResolverClient.ResolveText(ctx, query.ChainId, query.DnsName, query.InnerData)
 		switch {
 		case fallbackErr != nil:
 			u.logger.Warn("L1 universal resolver fallback failed",
@@ -109,7 +109,7 @@ func (u *ResolveOffchainQuery) textValue(ctx context.Context, query ens_gateway_
 		}
 	}
 
-	u.cache.SetText(query.ChainId, query.Node, query.Key, value)
+	u.resolutionCache.SetText(query.ChainId, query.Node, query.Key, value)
 	return value, nil
 }
 
@@ -119,7 +119,7 @@ func (u *ResolveOffchainQuery) resolveAddr(ctx context.Context, query ens_gatewa
 		return nil, err
 	}
 
-	encoded, err := u.codec.EncodeAddrResult(value)
+	encoded, err := u.resolverServiceCodec.EncodeAddrResult(value)
 	if err != nil {
 		return nil, fmt.Errorf("encode addr result: %w", err)
 	}
@@ -127,16 +127,16 @@ func (u *ResolveOffchainQuery) resolveAddr(ctx context.Context, query ens_gatewa
 }
 
 func (u *ResolveOffchainQuery) addrValue(ctx context.Context, query ens_gateway_interfaces.DecodedQuery) (common.Address, error) {
-	if cached := u.cache.GetAddr(query.ChainId, query.Node); cached != nil {
+	if cached := u.resolutionCache.GetAddr(query.ChainId, query.Node); cached != nil {
 		return *cached, nil
 	}
 
-	value, err := u.reader.Addr(ctx, query.ChainId, query.Node)
+	value, err := u.agentEnsRegistryReader.Addr(ctx, query.ChainId, query.Node)
 	if err != nil {
 		return common.Address{}, fmt.Errorf("read agent ens registry: %w", err)
 	}
 	if value == (common.Address{}) {
-		fallback, fallbackErr := u.universalResolver.ResolveAddr(ctx, query.ChainId, query.DnsName, query.InnerData)
+		fallback, fallbackErr := u.universalResolverClient.ResolveAddr(ctx, query.ChainId, query.DnsName, query.InnerData)
 		switch {
 		case fallbackErr != nil:
 			u.logger.Warn("L1 universal resolver fallback failed",
@@ -148,6 +148,6 @@ func (u *ResolveOffchainQuery) addrValue(ctx context.Context, query ens_gateway_
 		}
 	}
 
-	u.cache.SetAddr(query.ChainId, query.Node, value)
+	u.resolutionCache.SetAddr(query.ChainId, query.Node, value)
 	return value, nil
 }

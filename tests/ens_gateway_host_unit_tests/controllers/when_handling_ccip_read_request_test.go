@@ -23,19 +23,19 @@ const (
 )
 
 type WhenHandlingCcipReadRequestTestingSuite struct {
-	mockUseCase *use_cases_mocks.MockResolveOffchainQueryInterface
-	app         *fiber.App
+	mockResolveOffchainQuery *use_cases_mocks.MockResolveOffchainQueryInterface
+	app                      *fiber.App
 }
 
 func WhenHandlingCcipReadRequestBeforeEach(t *testing.T) *WhenHandlingCcipReadRequestTestingSuite {
 	ctrl := gomock.NewController(t)
-	mockUseCase := use_cases_mocks.NewMockResolveOffchainQueryInterface(ctrl)
+	mockResolveOffchainQuery := use_cases_mocks.NewMockResolveOffchainQueryInterface(ctrl)
 
-	controller := ens_gateway_mvc.NewCcipReadController(zap.NewNop(), mockUseCase)
+	controller := ens_gateway_mvc.NewCcipReadController(zap.NewNop(), mockResolveOffchainQuery)
 	app := fiber.New()
 	controller.RegisterRoutes(app)
 
-	return &WhenHandlingCcipReadRequestTestingSuite{mockUseCase: mockUseCase, app: app}
+	return &WhenHandlingCcipReadRequestTestingSuite{mockResolveOffchainQuery: mockResolveOffchainQuery, app: app}
 }
 
 func TestWhenHandlingCcipReadRequest(t *testing.T) {
@@ -45,7 +45,7 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingCcipReadRequestTestingSuite) {
-			suite.mockUseCase.EXPECT().
+			suite.mockResolveOffchainQuery.EXPECT().
 				Execute(gomock.Any(), gomock.Any()).
 				Return(&gateway_responses.CcipReadResponse{Data: "0xbeef"}, nil)
 		}
@@ -70,7 +70,7 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingCcipReadRequestTestingSuite) {
-			suite.mockUseCase.EXPECT().
+			suite.mockResolveOffchainQuery.EXPECT().
 				Execute(gomock.Any(), gomock.Any()).
 				Return(&gateway_responses.CcipReadResponse{Data: "0xbeef"}, nil)
 		}
@@ -151,7 +151,7 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingCcipReadRequestTestingSuite) {
-			suite.mockUseCase.EXPECT().
+			suite.mockResolveOffchainQuery.EXPECT().
 				Execute(gomock.Any(), gomock.Any()).
 				Return(nil, errors.New("boom"))
 		}

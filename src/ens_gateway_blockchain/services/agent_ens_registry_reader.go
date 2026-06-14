@@ -15,16 +15,16 @@ type AgentEnsRegistryReader struct {
 	bindings map[uint64]*abi.AgentEnsRegistry
 }
 
-// Iterates registries (not chains); extra chains in ChainsSettings are ignored.
+// Iterates agentEnsRegistriesSettings (not chains); extra chains in ChainsSettings are ignored.
 func NewAgentEnsRegistryReader(
 	logger *zap.Logger,
-	chains *blockchain_settings.ChainsSettings,
-	registries *blockchain_settings.AgentEnsRegistriesSettings,
+	chainsSettings *blockchain_settings.ChainsSettings,
+	agentEnsRegistriesSettings *blockchain_settings.AgentEnsRegistriesSettings,
 ) *AgentEnsRegistryReader {
-	bindings := make(map[uint64]*abi.AgentEnsRegistry, len(*registries))
+	bindings := make(map[uint64]*abi.AgentEnsRegistry, len(*agentEnsRegistriesSettings))
 
-	for chainId, address := range *registries {
-		chain := chains.Get(chainId)
+	for chainId, address := range *agentEnsRegistriesSettings {
+		chain := chainsSettings.Get(chainId)
 		if chain == nil {
 			logger.Fatal(
 				"AgentEnsRegistry configured for a chain with no RPC url; add the chain to appsettings.json (chains.<id>.rpc_http_url)",

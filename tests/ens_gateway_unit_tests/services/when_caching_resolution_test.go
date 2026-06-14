@@ -15,18 +15,18 @@ import (
 )
 
 type WhenCachingResolutionTestingSuite struct {
-	mockStorage *interfaces_mocks.MockCacheStorageInterface
-	sut         *ens_gateway_services.ResolutionCache
+	mockCacheStorage *interfaces_mocks.MockCacheStorageInterface
+	sut              *ens_gateway_services.ResolutionCache
 }
 
 func whenCachingResolutionBeforeEach(t *testing.T) *WhenCachingResolutionTestingSuite {
 	ctrl := gomock.NewController(t)
-	mockStorage := interfaces_mocks.NewMockCacheStorageInterface(ctrl)
+	mockCacheStorage := interfaces_mocks.NewMockCacheStorageInterface(ctrl)
 	settings := &ens_gateway_settings.CacheSettings{TtlSeconds: 3600}
 
 	return &WhenCachingResolutionTestingSuite{
-		mockStorage: mockStorage,
-		sut:         ens_gateway_services.NewResolutionCache(mockStorage, settings, zap.NewNop()),
+		mockCacheStorage: mockCacheStorage,
+		sut:              ens_gateway_services.NewResolutionCache(mockCacheStorage, settings, zap.NewNop()),
 	}
 }
 
@@ -47,7 +47,7 @@ func TestWhenCachingResolution(t *testing.T) {
 		suite := whenCachingResolutionBeforeEach(t)
 
 		cached := "https://agent.example"
-		suite.mockStorage.EXPECT().ReadString(textCacheKey).Return(&cached, nil)
+		suite.mockCacheStorage.EXPECT().ReadString(textCacheKey).Return(&cached, nil)
 
 		t.Run("Should read it back under the text key", func(t *testing.T) {
 			result := suite.sut.GetText(chainId, node, key)
@@ -61,7 +61,7 @@ func TestWhenCachingResolution(t *testing.T) {
 		t.Parallel()
 		suite := whenCachingResolutionBeforeEach(t)
 
-		suite.mockStorage.EXPECT().ReadString(textCacheKey).Return(nil, nil)
+		suite.mockCacheStorage.EXPECT().ReadString(textCacheKey).Return(nil, nil)
 
 		t.Run("Should return nil so the caller falls through to the RPC", func(t *testing.T) {
 			assert.Nil(t, suite.sut.GetText(chainId, node, key))
@@ -72,7 +72,7 @@ func TestWhenCachingResolution(t *testing.T) {
 		t.Parallel()
 		suite := whenCachingResolutionBeforeEach(t)
 
-		suite.mockStorage.EXPECT().ReadString(textCacheKey).Return(nil, errors.New("redis down"))
+		suite.mockCacheStorage.EXPECT().ReadString(textCacheKey).Return(nil, errors.New("redis down"))
 
 		t.Run("Should swallow the error and return nil", func(t *testing.T) {
 			assert.Nil(t, suite.sut.GetText(chainId, node, key))
@@ -83,7 +83,7 @@ func TestWhenCachingResolution(t *testing.T) {
 		t.Parallel()
 		suite := whenCachingResolutionBeforeEach(t)
 
-		suite.mockStorage.EXPECT().
+		suite.mockCacheStorage.EXPECT().
 			Store(textCacheKey, "https://agent.example", gomock.Any()).
 			DoAndReturn(func(_ string, _ any, expiration *time.Duration) error {
 				assert.NotNil(t, expiration)
@@ -100,7 +100,7 @@ func TestWhenCachingResolution(t *testing.T) {
 		t.Parallel()
 		suite := whenCachingResolutionBeforeEach(t)
 
-		suite.mockStorage.EXPECT().Store(textCacheKey, gomock.Any(), gomock.Any()).Return(errors.New("redis down"))
+		suite.mockCacheStorage.EXPECT().Store(textCacheKey, gomock.Any(), gomock.Any()).Return(errors.New("redis down"))
 
 		t.Run("Should swallow the error", func(t *testing.T) {
 			assert.NotPanics(t, func() {
@@ -115,7 +115,7 @@ func TestWhenCachingResolution(t *testing.T) {
 
 		addr := common.HexToAddress("0x2222222222222222222222222222222222222222")
 		hex := addr.Hex()
-		suite.mockStorage.EXPECT().ReadString(addrCacheKey).Return(&hex, nil)
+		suite.mockCacheStorage.EXPECT().ReadString(addrCacheKey).Return(&hex, nil)
 
 		t.Run("Should read it back as an address under the addr key", func(t *testing.T) {
 			result := suite.sut.GetAddr(chainId, node)
@@ -130,7 +130,7 @@ func TestWhenCachingResolution(t *testing.T) {
 		suite := whenCachingResolutionBeforeEach(t)
 
 		addr := common.HexToAddress("0x3333333333333333333333333333333333333333")
-		suite.mockStorage.EXPECT().
+		suite.mockCacheStorage.EXPECT().
 			Store(addrCacheKey, addr.Hex(), gomock.Any()).
 			Return(nil)
 

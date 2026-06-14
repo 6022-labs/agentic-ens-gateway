@@ -14,21 +14,21 @@ import (
 )
 
 type UniversalResolverClient struct {
-	codec    interfaces.ResolverServiceCodecInterface
-	bindings map[uint64]*abi.UniversalResolver
+	resolverServiceCodec interfaces.ResolverServiceCodecInterface
+	bindings             map[uint64]*abi.UniversalResolver
 }
 
 func NewUniversalResolverClient(
 	logger *zap.Logger,
-	chains *blockchain_settings.ChainsSettings,
-	fallbacks *blockchain_settings.UniversalResolverSettings,
-	codec interfaces.ResolverServiceCodecInterface,
+	chainsSettings *blockchain_settings.ChainsSettings,
+	universalResolverSettings *blockchain_settings.UniversalResolverSettings,
+	resolverServiceCodec interfaces.ResolverServiceCodecInterface,
 ) *UniversalResolverClient {
 	resolverClients := map[uint64]*ethclient.Client{}
 	bindings := map[uint64]*abi.UniversalResolver{}
 
-	for sourceChainId := range fallbacks.Mappings {
-		resolverChainId, addr, ok := fallbacks.Get(sourceChainId)
+	for sourceChainId := range universalResolverSettings.Mappings {
+		resolverChainId, addr, ok := universalResolverSettings.Get(sourceChainId)
 		if !ok {
 			logger.Info("ENS fallback disabled for source chain: no resolver address for mapped chain",
 				zap.Uint64("source_chain_id", sourceChainId),
@@ -37,7 +37,7 @@ func NewUniversalResolverClient(
 			continue
 		}
 
-		resolverChain := chains.Get(resolverChainId)
+		resolverChain := chainsSettings.Get(resolverChainId)
 		if resolverChain == nil {
 			logger.Info("ENS fallback disabled for source chain: add chains.<universal_resolver_chain_id>.rpc_http_url to enable",
 				zap.Uint64("source_chain_id", sourceChainId),
@@ -76,7 +76,7 @@ func NewUniversalResolverClient(
 		)
 	}
 
-	return &UniversalResolverClient{codec: codec, bindings: bindings}
+	return &UniversalResolverClient{resolverServiceCodec: resolverServiceCodec, bindings: bindings}
 }
 
 func (c *UniversalResolverClient) ResolveText(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (string, error) {
@@ -84,7 +84,7 @@ func (c *UniversalResolverClient) ResolveText(ctx context.Context, sourceChainId
 	if err != nil || !ok {
 		return "", err
 	}
-	return c.codec.DecodeTextResult(result)
+	return c.resolverServiceCodec.DecodeTextResult(result)
 }
 
 func (c *UniversalResolverClient) ResolveAddr(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) (common.Address, error) {
@@ -92,7 +92,7 @@ func (c *UniversalResolverClient) ResolveAddr(ctx context.Context, sourceChainId
 	if err != nil || !ok {
 		return common.Address{}, err
 	}
-	return c.codec.DecodeAddrResult(result)
+	return c.resolverServiceCodec.DecodeAddrResult(result)
 }
 
 func (c *UniversalResolverClient) resolve(ctx context.Context, sourceChainId uint64, dnsName, innerData []byte) ([]byte, bool, error) {
