@@ -49,7 +49,7 @@ func (b *SignedResponseBuilder) Build(
 ) ([]byte, error) {
 	expires := uint64(time.Now().Add(b.signedResponseSettings.Ttl()).Unix())
 
-	digest := makeSignatureHash(resolver, expires, callData, result)
+	digest := b.makeSignatureHash(resolver, expires, callData, result)
 	sig, err := b.signer.Sign(digest)
 	if err != nil {
 		return nil, fmt.Errorf("sign response: %w", err)
@@ -60,7 +60,7 @@ func (b *SignedResponseBuilder) Build(
 
 // makeSignatureHash mirrors contracts/libraries/SignatureVerifier.sol:
 // keccak256(abi.encodePacked(hex"1900", target, expires, keccak256(request), keccak256(result))).
-func makeSignatureHash(target common.Address, expires uint64, request, result []byte) []byte {
+func (b *SignedResponseBuilder) makeSignatureHash(target common.Address, expires uint64, request, result []byte) []byte {
 	expiresBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(expiresBytes, expires)
 

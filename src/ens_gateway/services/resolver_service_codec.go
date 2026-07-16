@@ -11,15 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-// Selectors for the ABI layers the gateway decodes. resolve(bytes,bytes) is
-// the ENSIP-10 / IResolverService outer call; text(bytes32,string) and
-// addr(bytes32) are the inner ENS record queries the L1 resolver forwards.
-var (
-	resolveSelector = crypto.Keccak256([]byte("resolve(bytes,bytes)"))[:4]
-	textSelector    = crypto.Keccak256([]byte("text(bytes32,string)"))[:4]
-	addrSelector    = crypto.Keccak256([]byte("addr(bytes32)"))[:4]
-)
-
 // chainIdLabelIndex is the position of the chain-id label in the DNS-encoded
 // ENS name, counting from the leftmost label. Matches the existing domain
 // convention `{agent}.{collection}.{chainId}.protocol6022.eth`.
@@ -28,6 +19,13 @@ const chainIdLabelIndex = 2
 // ResolverServiceCodec decodes ERC-3668 resolver call data and encodes resolved
 // values back into the resolver result shape.
 type ResolverServiceCodec struct {
+	// Selectors for the ABI layers the gateway decodes. resolve(bytes,bytes) is
+	// the ENSIP-10 / IResolverService outer call; text(bytes32,string) and
+	// addr(bytes32) are the inner ENS record queries the L1 resolver forwards.
+	resolveSelector []byte
+	textSelector    []byte
+	addrSelector    []byte
+
 	resolveArgs    abi.Arguments
 	textArgs       abi.Arguments
 	addrArgs       abi.Arguments
@@ -42,6 +40,10 @@ func NewResolverServiceCodec() *ResolverServiceCodec {
 	addressType, _ := abi.NewType("address", "", nil)
 
 	return &ResolverServiceCodec{
+		resolveSelector: crypto.Keccak256([]byte("resolve(bytes,bytes)"))[:4],
+		textSelector:    crypto.Keccak256([]byte("text(bytes32,string)"))[:4],
+		addrSelector:    crypto.Keccak256([]byte("addr(bytes32)"))[:4],
+
 		resolveArgs:    abi.Arguments{{Type: bytesType}, {Type: bytesType}},
 		textArgs:       abi.Arguments{{Type: bytes32Type}, {Type: stringType}},
 		addrArgs:       abi.Arguments{{Type: bytes32Type}},
@@ -55,7 +57,7 @@ func NewResolverServiceCodec() *ResolverServiceCodec {
 // decodes the inner query — either text(bytes32 node, string key) or
 // addr(bytes32 node).
 func (c *ResolverServiceCodec) Decode(callData []byte) (ens_gateway_interfaces.DecodedQuery, error) {
-	if len(callData) < 4 || !bytes.Equal(callData[:4], resolveSelector) {
+	if len(callData) < 4 || !bytes.Equal(callData[:4], c.resolveSelector) {
 		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("unexpected call data selector, want resolve(bytes,bytes)")
 	}
 
@@ -72,7 +74,7 @@ func (c *ResolverServiceCodec) Decode(callData []byte) (ens_gateway_interfaces.D
 		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode resolve(bytes,bytes): inner data is not bytes")
 	}
 
-	chainId, err := extractChainIdFromDnsName(name, chainIdLabelIndex)
+	chainId, err := c.extractChainIdFromDnsName(name, chainIdLabelIndex)
 	if err != nil {
 		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("extract chain id: %w", err)
 	}
@@ -83,9 +85,9 @@ func (c *ResolverServiceCodec) Decode(callData []byte) (ens_gateway_interfaces.D
 	innerSelector := innerData[:4]
 
 	switch {
-	case bytes.Equal(innerSelector, textSelector):
+	case bytes.Equal(innerSelector, c.textSelector):
 		return c.decodeText(chainId, name, innerData)
-	case bytes.Equal(innerSelector, addrSelector):
+	case bytes.Equal(innerSelector, c.addrSelector):
 		return c.decodeAddr(chainId, name, innerData)
 	default:
 		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("unsupported inner selector, want text(bytes32,string) or addr(bytes32)")
@@ -178,7 +180,7 @@ func (c *ResolverServiceCodec) DecodeAddrResult(result []byte) (common.Address, 
 // extractChainIdFromDnsName parses a DNS-encoded ENS name (length-prefixed
 // labels, null-terminated) and returns the label at `labelIndex` (counted from
 // the leftmost label, zero-based) parsed as a uint64.
-func extractChainIdFromDnsName(name []byte, labelIndex int) (uint64, error) {
+func (c *ResolverServiceCodec) extractChainIdFromDnsName(name []byte, labelIndex int) (uint64, error) {
 	pos := 0
 	for i := 0; ; i++ {
 		if pos >= len(name) {
