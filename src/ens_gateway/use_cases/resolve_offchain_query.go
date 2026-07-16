@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/6022-labs/agentic-ens-gateway/src/common/errors"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/requests"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/responses"
@@ -49,7 +50,7 @@ func (u *ResolveOffchainQuery) Execute(
 ) (*responses.CcipReadResponse, error) {
 	query, err := u.resolverServiceCodec.Decode(request.Data)
 	if err != nil {
-		return nil, fmt.Errorf("decode call data: %w", err)
+		return nil, errors.NewValidationError("data", fmt.Sprintf("invalid resolver call data: %s", err.Error()))
 	}
 
 	var result []byte
@@ -59,7 +60,7 @@ func (u *ResolveOffchainQuery) Execute(
 	case ens_gateway_interfaces.QueryKindAddr:
 		result, err = u.resolveAddr(ctx, query)
 	default:
-		return nil, fmt.Errorf("unsupported query kind: %d", query.Kind)
+		return nil, errors.NewValidationError("data", fmt.Sprintf("unsupported query kind: %d", query.Kind))
 	}
 	if err != nil {
 		return nil, err

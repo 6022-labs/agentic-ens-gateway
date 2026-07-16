@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	apperrors "github.com/6022-labs/agentic-ens-gateway/src/common/errors"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	gateway_use_cases "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/requests"
@@ -232,7 +233,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(ens_gateway_interfaces.DecodedQuery{}, errors.New("bad selector"))
 		}
 
-		t.Run("Should return the error without touching the cache, registry, or fallback", func(t *testing.T) {
+		t.Run("Should return a validation error without touching the cache, registry, or fallback", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
@@ -240,7 +241,30 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 
 			_, err := suite.sut.Execute(context.Background(), request)
 
-			assert.Error(t, err)
+			var validationErr *apperrors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "data", validationErr.Field)
+		})
+	})
+
+	t.Run("Given the codec returns an unsupported query kind", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
+			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(ens_gateway_interfaces.DecodedQuery{Kind: 99}, nil)
+		}
+
+		t.Run("Should return a validation error", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingOffchainQueryBeforeEach(t)
+			initSuite(suite)
+
+			_, err := suite.sut.Execute(context.Background(), request)
+
+			var validationErr *apperrors.ValidationError
+			assert.ErrorAs(t, err, &validationErr)
+			assert.Equal(t, "data", validationErr.Field)
 		})
 	})
 

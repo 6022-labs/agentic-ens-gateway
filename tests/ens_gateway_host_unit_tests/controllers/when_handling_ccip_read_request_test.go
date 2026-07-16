@@ -1,7 +1,10 @@
 package controllers_test
 
 import (
+	"encoding/json"
 	"errors"
+
+	apperrors "github.com/6022-labs/agentic-ens-gateway/src/common/errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -144,6 +147,34 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	})
+
+	t.Run("Given the use case fails with a validation error", func(t *testing.T) {
+		t.Parallel()
+
+		initSuite := func(suite *WhenHandlingCcipReadRequestTestingSuite) {
+			suite.mockResolveOffchainQuery.EXPECT().
+				Execute(gomock.Any(), gomock.Any()).
+				Return(nil, apperrors.NewValidationError("data", "invalid resolver call data"))
+		}
+
+		t.Run("Should return 400 with the field and message", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingCcipReadRequestBeforeEach(t)
+			initSuite(suite)
+
+			req := httptest.NewRequest(http.MethodGet, "/"+testSender+"/"+testDataHex+".json", nil)
+			resp, err := suite.app.Test(req)
+
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+			var body map[string]string
+			assert.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
+			assert.Equal(t, "data", body["field"])
+			assert.Equal(t, "invalid resolver call data", body["message"])
 		})
 	})
 
