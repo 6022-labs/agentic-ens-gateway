@@ -87,8 +87,7 @@ func (c *CcipReadController) resolve(ctx *fiber.Ctx, senderParam, dataHex string
 	return ctx.JSON(response)
 }
 
-// writeError maps a typed error to its status; anything unknown collapses to a
-// detail-free 500.
+// writeError maps typed errors to statuses; anything unknown collapses to a detail-free 500.
 func (c *CcipReadController) writeError(ctx *fiber.Ctx, err error) error {
 	switch e := err.(type) {
 	case *errors.ValidationError:
