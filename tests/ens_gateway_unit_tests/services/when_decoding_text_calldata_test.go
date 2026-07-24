@@ -17,7 +17,7 @@ func TestWhenDecodingTextCalldata(t *testing.T) {
 	copy(node[:], crypto.Keccak256([]byte("test-node")))
 	const key = "url"
 
-	// `{agent}.{collection}.{chainId}.protocol6022.eth` — chain id at label index 2.
+	// `{agent}.{collection}.{chainId}.6022.eth` — chain id at label index 2.
 	validName := dnsEncode("myagent", "test-collection", "137", "protocol6022", "eth")
 
 	t.Run("Given valid resolve+text call data with a chain-id label", func(t *testing.T) {

@@ -16,7 +16,7 @@ func TestWhenDecodingAddrCalldata(t *testing.T) {
 	var node [32]byte
 	copy(node[:], crypto.Keccak256([]byte("test-node")))
 
-	// `{agent}.{collection}.{chainId}.protocol6022.eth` — chain id at label index 2.
+	// `{agent}.{collection}.{chainId}.6022.eth` — chain id at label index 2.
 	validName := dnsEncode("myagent", "test-collection", "137", "protocol6022", "eth")
 
 	t.Run("Given valid resolve+addr call data with a chain-id label", func(t *testing.T) {

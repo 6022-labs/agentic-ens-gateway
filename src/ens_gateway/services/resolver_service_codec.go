@@ -13,7 +13,7 @@ import (
 
 // chainIdLabelIndex is the position of the chain-id label in the DNS-encoded
 // ENS name, counting from the leftmost label. Matches the existing domain
-// convention `{agent}.{collection}.{chainId}.protocol6022.eth`.
+// convention `{agent}.{collection}.{chainId}.6022.eth`.
 const chainIdLabelIndex = 2
 
 // ResolverServiceCodec decodes ERC-3668 resolver call data and encodes resolved

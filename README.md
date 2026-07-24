@@ -12,7 +12,7 @@ ERC-3668, and a CCIP-Read client calls this gateway. The gateway:
    name, then decodes the inner `text(bytes32 node, string key)` query.
 2. Reads `AgentEnsRegistry.text(node, key)` on the matching chain.
 3. Returns an ENS-format **signed** response — `abi.encode(result, expires,
-   sig)` — that the L1 resolver's `SignatureVerifier` authenticates.
+sig)` — that the L1 resolver's `SignatureVerifier` authenticates.
 
 Architecture mirrors `agentic-agent-node` (hexagonal modules, `go.uber.org/dig`
 DI, `koanf` config, Fiber host, `when_*_test.go` tests).
@@ -20,7 +20,7 @@ DI, `koanf` config, Fiber host, `when_*_test.go` tests).
 ## Resolution flow
 
 End-to-end path from an agent's ENS name —
-`<agent>.<collection>.<chainId>.protocol6022.eth` — to invoking the agent
+`<agent>.<collection>.<chainId>.6022.eth` — to invoking the agent
 itself. The chain id label tells the gateway which chain's registry holds
 the records (`80002` = Polygon Amoy, `137` = Polygon mainnet). The
 client never talks to the registry chain directly — the `OffchainLookup`
@@ -36,7 +36,7 @@ sequenceDiagram
     participant REG as AgentEnsRegistry<br/>(registry chain, e.g. Polygon Amoy)
     participant A as Agent node<br/>(A2A endpoint)
 
-    U->>ENS: resolve("claudine.mycompany.80002.protocol6022.eth",<br/>text/addr calldata)
+    U->>ENS: resolve("claudine.mycompany.80002.6022.eth",<br/>text/addr calldata)
     ENS--xU: revert OffchainLookup(sender, urls[], callData,<br/>resolveWithProof, extraData)
 
     Note over U,GW: client follows ERC-3668 (CCIP-Read)
@@ -87,12 +87,15 @@ baked into `src/ens_gateway_blockchain/settings/universal_resolvers.json`:
 ```json
 {
   "resolvers": [
-    { "chainId": 1,        "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe" },
-    { "chainId": 11155111, "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe" }
+    { "chainId": 1, "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe" },
+    {
+      "chainId": 11155111,
+      "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe"
+    }
   ],
   "mappings": [
-    { "sourceChainId": 1,     "universalResolverChainId": 1 },
-    { "sourceChainId": 137,   "universalResolverChainId": 1 },
+    { "sourceChainId": 1, "universalResolverChainId": 1 },
+    { "sourceChainId": 137, "universalResolverChainId": 1 },
     { "sourceChainId": 80002, "universalResolverChainId": 11155111 }
   ]
 }
