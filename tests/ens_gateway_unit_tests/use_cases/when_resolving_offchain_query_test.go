@@ -6,10 +6,14 @@ import (
 	"testing"
 
 	apperrors "github.com/6022-labs/agentic-ens-gateway/src/common/errors"
+	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/metrics/interfaces"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
+	traces_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces/interfaces"
 	gateway_use_cases "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/requests"
+	metrics_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/services_mocks/interfaces_mocks"
+	traces_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/traces_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -24,6 +28,7 @@ type WhenResolvingOffchainQueryTestingSuite struct {
 	mockUniversalResolverClient *interfaces_mocks.MockUniversalResolverClientInterface
 	mockResponseBuilder         *interfaces_mocks.MockResponseBuilderInterface
 	mockResolutionCache         *interfaces_mocks.MockResolutionCacheInterface
+	mockEnsResolutionMetrics    *metrics_mocks.MockEnsResolutionMetricsInterface
 	logs                        *observer.ObservedLogs
 	sut                         *gateway_use_cases.ResolveOffchainQuery
 }
@@ -36,6 +41,31 @@ func WhenResolvingOffchainQueryBeforeEach(t *testing.T) *WhenResolvingOffchainQu
 	mockResponseBuilder := interfaces_mocks.NewMockResponseBuilderInterface(ctrl)
 	mockResolutionCache := interfaces_mocks.NewMockResolutionCacheInterface(ctrl)
 
+	mockEnsResolutionMetrics := metrics_mocks.NewMockEnsResolutionMetricsInterface(ctrl)
+
+	mockSpan := traces_mocks.NewMockSpan(ctrl)
+	mockSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
+	mockSpan.EXPECT().End().AnyTimes()
+
+	mockResolutionSpan := traces_mocks.NewMockResolutionSpan(ctrl)
+	mockResolutionSpan.EXPECT().RecordSource(gomock.Any()).AnyTimes()
+	mockResolutionSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
+	mockResolutionSpan.EXPECT().End().AnyTimes()
+
+	mockResolutionTracer := traces_mocks.NewMockResolutionTracerInterface(ctrl)
+	mockResolutionTracer.EXPECT().StartResolution(gomock.Any(), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ string, _ uint64) (context.Context, traces_interfaces.ResolutionSpan) {
+			return ctx, mockResolutionSpan
+		}).AnyTimes()
+	mockResolutionTracer.EXPECT().StartRegistryRead(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ uint64) (context.Context, traces_interfaces.Span) {
+			return ctx, mockSpan
+		}).AnyTimes()
+	mockResolutionTracer.EXPECT().StartUniversalResolverFallback(gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, _ uint64) (context.Context, traces_interfaces.Span) {
+			return ctx, mockSpan
+		}).AnyTimes()
+
 	core, logs := observer.New(zapcore.WarnLevel)
 	logger := zap.New(core)
 
@@ -45,8 +75,9 @@ func WhenResolvingOffchainQueryBeforeEach(t *testing.T) *WhenResolvingOffchainQu
 		mockUniversalResolverClient: mockUniversalResolverClient,
 		mockResponseBuilder:         mockResponseBuilder,
 		mockResolutionCache:         mockResolutionCache,
+		mockEnsResolutionMetrics:    mockEnsResolutionMetrics,
 		logs:                        logs,
-		sut:                         gateway_use_cases.NewResolveOffchainQuery(logger, mockResolverServiceCodec, mockAgentEnsRegistryReader, mockUniversalResolverClient, mockResponseBuilder, mockResolutionCache),
+		sut:                         gateway_use_cases.NewResolveOffchainQuery(logger, mockResolverServiceCodec, mockAgentEnsRegistryReader, mockUniversalResolverClient, mockResponseBuilder, mockResolutionCache, mockEnsResolutionMetrics, mockResolutionTracer),
 	}
 }
 
@@ -98,6 +129,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0xde, 0xad}).
 				Return([]byte{0xbe, 0xef}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", true)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceCache, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should return the cached value without reading the registry or the fallback", func(t *testing.T) {
@@ -125,6 +161,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0xde, 0xad}).
 				Return([]byte{0xbe, 0xef}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should cache the value, sign it, and not call the L1 fallback", func(t *testing.T) {
@@ -153,6 +194,13 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0xab, 0xcd}).
 				Return([]byte{0xfa, 0xce}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordFallback(
+				gomock.Any(), "text", metrics_interfaces.FallbackOutcomeResolved, chainId)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceUniversalResolver, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should sign the L1 fallback value", func(t *testing.T) {
@@ -181,6 +229,13 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
 				Return([]byte{0x42}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordFallback(
+				gomock.Any(), "text", metrics_interfaces.FallbackOutcomeEmpty, chainId)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should sign an empty value without erroring", func(t *testing.T) {
@@ -209,6 +264,13 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
 				Return([]byte{0x42}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordFallback(
+				gomock.Any(), "text", metrics_interfaces.FallbackOutcomeFailed, chainId)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should swallow the error, log a warning, and sign an empty value", func(t *testing.T) {
@@ -231,6 +293,8 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
 			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(ens_gateway_interfaces.DecodedQuery{}, errors.New("bad selector"))
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordDecodeError(gomock.Any(), "undecodable_calldata")
 		}
 
 		t.Run("Should return a validation error without touching the cache, registry, or fallback", func(t *testing.T) {
@@ -252,6 +316,8 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
 			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(ens_gateway_interfaces.DecodedQuery{Kind: 99}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordDecodeError(gomock.Any(), "unsupported_query_kind")
 		}
 
 		t.Run("Should return a validation error", func(t *testing.T) {
@@ -275,6 +341,10 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Text(gomock.Any(), chainId, node, key).Return("", errors.New("rpc down"))
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should return the error without caching, invoking the fallback, or building a response", func(t *testing.T) {
@@ -298,6 +368,10 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockAgentEnsRegistryReader.EXPECT().Text(gomock.Any(), chainId, node, key).Return("https://agent.example/", nil)
 			suite.mockResolutionCache.EXPECT().SetText(chainId, node, key, "https://agent.example/")
 			suite.mockResolverServiceCodec.EXPECT().EncodeTextResult("https://agent.example/").Return(nil, errors.New("encode failed"))
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should return the error without building a response", func(t *testing.T) {
@@ -324,6 +398,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0xde, 0xad}).
 				Return(nil, errors.New("sign failed"))
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "text", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should return the error", func(t *testing.T) {
@@ -348,6 +427,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0xa1, 0xa2}).
 				Return([]byte{0xb1, 0xb2}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", true)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "addr", metrics_interfaces.ResolutionSourceCache, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should return the cached address without reading the registry or the fallback", func(t *testing.T) {
@@ -375,6 +459,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0xa1, 0xa2}).
 				Return([]byte{0xb1, 0xb2}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "addr", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should cache and sign the L2 address and not call the L1 fallback", func(t *testing.T) {
@@ -403,6 +492,13 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0xc1, 0xc2}).
 				Return([]byte{0xd1, 0xd2}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordFallback(
+				gomock.Any(), "addr", metrics_interfaces.FallbackOutcomeResolved, chainId)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "addr", metrics_interfaces.ResolutionSourceUniversalResolver, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should sign the L1 fallback address", func(t *testing.T) {
@@ -431,6 +527,13 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
 				Return([]byte{0x42}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordFallback(
+				gomock.Any(), "addr", metrics_interfaces.FallbackOutcomeEmpty, chainId)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "addr", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should sign the zero address without erroring", func(t *testing.T) {
@@ -459,6 +562,13 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResponseBuilder.EXPECT().
 				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
 				Return([]byte{0x42}, nil)
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordFallback(
+				gomock.Any(), "addr", metrics_interfaces.FallbackOutcomeFailed, chainId)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "addr", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), nil)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordSignedResponse(gomock.Any(), nil)
 		}
 
 		t.Run("Should swallow the error, log a warning, and sign the zero address", func(t *testing.T) {
@@ -483,6 +593,10 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decodedAddr, nil)
 			suite.mockResolutionCache.EXPECT().GetAddr(chainId, node).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Addr(gomock.Any(), chainId, node).Return(common.Address{}, errors.New("rpc down"))
+
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordResolution(
+				gomock.Any(), "addr", metrics_interfaces.ResolutionSourceAgentEnsRegistry, chainId, gomock.Any(), gomock.Any())
 		}
 
 		t.Run("Should return the error without caching, invoking the fallback, or building a response", func(t *testing.T) {

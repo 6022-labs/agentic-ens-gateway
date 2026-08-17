@@ -2,6 +2,9 @@ package configurations
 
 import (
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/factory"
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/metrics/interfaces"
 	blockchain_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/services"
 	blockchain_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/settings"
 	"go.uber.org/dig"
@@ -17,6 +20,17 @@ func AddEnsGatewayBlockchainConfiguration(container *dig.Container) {
 	}
 
 	if err := container.Provide(blockchain_settings.NewUniversalResolverSettings); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(
+		metrics.NewBlockchainRpcMetrics,
+		dig.As(new(metrics_interfaces.BlockchainRpcMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(factory.NewEthClientFactory); err != nil {
 		panic(err)
 	}
 

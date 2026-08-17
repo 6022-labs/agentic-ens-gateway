@@ -62,7 +62,10 @@ ENS `UniversalResolver` — see [ENS fallback](#ens-fallback-optional) below.
 - `src/ens_gateway` — core domain (codec, signer, response builder, use case).
 - `src/ens_gateway_blockchain` — per-chain RPC clients + `AgentEnsRegistry` reader.
 - `src/ens_gateway_mvc` — Fiber controllers (CCIP-Read endpoint + health).
+- `src/ens_gateway_redis` — resolution cache backend.
 - `src/ens_gateway_host` — HTTP host entrypoint, DI wiring, server config.
+- `src/common` — telemetry bootstrap, shared metrics and middlewares.
+- `grafana/` — the observability stack (Alloy, Mimir, Loki, Tempo, dashboards).
 
 ## Run
 
@@ -71,6 +74,47 @@ cp src/ens_gateway_host/appsettings.example.json src/ens_gateway_host/appsetting
 # fill chains.<chain_id>.rpc_http_url and signed_response.private_key
 cd src/ens_gateway_host && go run .
 ```
+
+Or bring up the gateway plus Redis and the observability stack:
+
+```sh
+docker compose up
+```
+
+- **Gateway:** http://localhost:5000
+- **Grafana:** http://localhost:3000
+
+## Observability
+
+The host exports metrics, logs and traces over OTLP/gRPC to Grafana Alloy, which
+fans them out to Mimir, Loki and Tempo. Several apps and environments can share
+one stack; `service.name`, `service.instance.id` and `deployment.environment.name`
+distinguish them, and every dashboard filters on them.
+
+Gateway side (`TELEMETRY__*`, or the `telemetry` block of `appsettings.json`):
+
+| Setting | Meaning |
+| --- | --- |
+| `enabled` | export at all |
+| `endpoint` | Alloy OTLP/gRPC `host:port` |
+| `insecure` | disable TLS on the connection |
+| `instance_id` | value of `service.instance.id` |
+| `environment` | value of `deployment.environment.name` (required when enabled) |
+| `auth_token` | bearer credential |
+| `auth_username` + `auth_password` | basic credential |
+
+The scheme is derived: a token means bearer, a username and password mean basic,
+neither means no authentication. Setting both is fatal at startup.
+
+Alloy side — the OTLP ingest is **unauthenticated by default** and the entrypoint
+logs a warning saying so. `OTLP_AUTH_HTPASSWD` (basic, one credential per sender)
+or `OTLP_AUTH_TOKEN` (bearer, shared) enable it, and `OTLP_TLS_CERT_FILE` +
+`OTLP_TLS_KEY_FILE` serve it over TLS. Authentication over a plaintext connection
+sends the credential in the clear: pair it with TLS on any untrusted network.
+
+Beyond the shared HTTP, RPC and cache dashboards, `grafana/dashboards/ens-gateway.json`
+covers resolution rate and latency by source, cache hit ratio, L1 fallback outcomes,
+calldata decode errors and signing failures.
 
 ## ENS fallback (optional)
 

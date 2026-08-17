@@ -3,9 +3,13 @@ package configurations
 import (
 	"strings"
 
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/metrics"
+	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/metrics/interfaces"
 	ens_gateway_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	ens_gateway_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/settings"
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces"
+	traces_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces/interfaces"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/ethereum/go-ethereum/crypto"
 	"go.uber.org/dig"
@@ -45,6 +49,20 @@ func AddEnsGatewayConfiguration(container *dig.Container) {
 	if err := container.Provide(
 		ens_gateway_services.NewResolutionCache,
 		dig.As(new(ens_gateway_interfaces.ResolutionCacheInterface)),
+	); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(
+		metrics.NewEnsResolutionMetrics,
+		dig.As(new(metrics_interfaces.EnsResolutionMetricsInterface)),
+	); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(
+		traces.NewResolutionTracer,
+		dig.As(new(traces_interfaces.ResolutionTracerInterface)),
 	); err != nil {
 		panic(err)
 	}

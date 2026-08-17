@@ -6,10 +6,10 @@ import (
 
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/abi"
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/factory"
 	blockchain_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/settings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 )
 
@@ -23,8 +23,8 @@ func NewUniversalResolverClient(
 	chainsSettings *blockchain_settings.ChainsSettings,
 	universalResolverSettings *blockchain_settings.UniversalResolverSettings,
 	resolverServiceCodec interfaces.ResolverServiceCodecInterface,
+	ethClientFactory *factory.EthClientFactory,
 ) *UniversalResolverClient {
-	resolverClients := map[uint64]*ethclient.Client{}
 	bindings := map[uint64]*abi.UniversalResolver{}
 
 	for sourceChainId := range universalResolverSettings.Mappings {
@@ -46,17 +46,12 @@ func NewUniversalResolverClient(
 			continue
 		}
 
-		client, ok := resolverClients[resolverChainId]
-		if !ok {
-			c, err := ethclient.Dial(resolverChain.RpcHttpUrl)
-			if err != nil {
-				logger.Fatal("failed to dial RPC for ENS fallback",
-					zap.Uint64("universal_resolver_chain_id", resolverChainId),
-					zap.Error(err),
-				)
-			}
-			resolverClients[resolverChainId] = c
-			client = c
+		client, err := ethClientFactory.For(resolverChainId)
+		if err != nil {
+			logger.Fatal("failed to dial RPC for ENS fallback",
+				zap.Uint64("universal_resolver_chain_id", resolverChainId),
+				zap.Error(err),
+			)
 		}
 
 		binding, err := abi.NewUniversalResolver(addr, client)

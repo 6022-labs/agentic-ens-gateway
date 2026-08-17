@@ -1,9 +1,11 @@
 package configurations
 
 import (
+	mvc_middlewares "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/middlewares"
 	_ "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/docs"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
 	fiberzap "github.com/gofiber/contrib/fiberzap/v2"
+	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/swagger"
@@ -11,7 +13,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const appName = "ENS-Gateway"
+const AppName = "6022-EnsGateway"
 
 func ConfigureServer(container *dig.Container) {
 	if err := container.Provide(newHttpServer); err != nil {
@@ -25,7 +27,7 @@ func ConfigureServer(container *dig.Container) {
 
 func newHttpServer() *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName: appName,
+		AppName: AppName,
 		Network: "tcp",
 	})
 }
@@ -33,9 +35,10 @@ func newHttpServer() *fiber.App {
 type registerRoutesParams struct {
 	dig.In
 
-	App         *fiber.App
-	Logger      *zap.Logger
-	Controllers []ens_gateway_mvc.ControllerInterface `group:"controllers"`
+	App            *fiber.App
+	Logger         *zap.Logger
+	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
+	Controllers    []ens_gateway_mvc.ControllerInterface `group:"controllers"`
 }
 
 func registerRoutes(p registerRoutesParams) {
@@ -43,6 +46,9 @@ func registerRoutes(p registerRoutesParams) {
 		AllowOrigins: "*",
 		AllowHeaders: "*",
 	}))
+	// Spans only: ApiRequestMetrics owns http.server.*.
+	p.App.Use(otelfiber.Middleware(otelfiber.WithoutMetrics(true)))
+	p.App.Use(p.RequestMetrics.Handle)
 	p.App.Use(fiberzap.New(fiberzap.Config{Logger: p.Logger}))
 
 	p.App.Get("/swagger/*", swagger.New())

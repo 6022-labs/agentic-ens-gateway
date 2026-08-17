@@ -8,8 +8,10 @@ import (
 
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_redis/services"
 	"github.com/6022-labs/agentic-ens-gateway/tests/common_tests/container_builders"
+	metrics_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_redis_mocks/metrics_mocks/interfaces_mocks"
 	"github.com/redis/go-redis/v9"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 type WhenStoringValueTestingSuite struct {
@@ -17,11 +19,15 @@ type WhenStoringValueTestingSuite struct {
 	sut         *services.RedisStorage
 }
 
-func WhenStoringValueBeforeEach() *WhenStoringValueTestingSuite {
+func WhenStoringValueBeforeEach(t *testing.T) *WhenStoringValueTestingSuite {
 	redisClient := container_builders.GetRedisConnection()
+
+	redisMetrics := metrics_mocks.NewMockRedisMetricsInterface(gomock.NewController(t))
+	redisMetrics.EXPECT().RecordOperation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 	sut := services.NewRedisStorage(
 		redisClient,
+		redisMetrics,
 	)
 
 	return &WhenStoringValueTestingSuite{
@@ -38,7 +44,7 @@ func TestWhenStoringValue(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Given a value stored without expiration", func(t *testing.T) {
-		suite := WhenStoringValueBeforeEach()
+		suite := WhenStoringValueBeforeEach(t)
 		defer WhenStoringValueAfterEach(suite)
 
 		key := fmt.Sprintf("test_store_value_%s_%d", t.Name(), time.Now().UnixNano())
@@ -55,7 +61,7 @@ func TestWhenStoringValue(t *testing.T) {
 	})
 
 	t.Run("Given a value stored with a TTL", func(t *testing.T) {
-		suite := WhenStoringValueBeforeEach()
+		suite := WhenStoringValueBeforeEach(t)
 		defer WhenStoringValueAfterEach(suite)
 
 		key := fmt.Sprintf("test_store_ttl_%s_%d", t.Name(), time.Now().UnixNano())
@@ -76,7 +82,7 @@ func TestWhenStoringValue(t *testing.T) {
 	})
 
 	t.Run("Given a value stored with a short TTL that has elapsed", func(t *testing.T) {
-		suite := WhenStoringValueBeforeEach()
+		suite := WhenStoringValueBeforeEach(t)
 		defer WhenStoringValueAfterEach(suite)
 
 		key := fmt.Sprintf("test_store_expiry_%s_%d", t.Name(), time.Now().UnixNano())

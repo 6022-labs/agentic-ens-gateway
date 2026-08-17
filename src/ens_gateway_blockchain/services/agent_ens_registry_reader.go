@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/abi"
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/factory"
 	blockchain_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/settings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"go.uber.org/zap"
 )
 
@@ -20,6 +20,7 @@ func NewAgentEnsRegistryReader(
 	logger *zap.Logger,
 	chainsSettings *blockchain_settings.ChainsSettings,
 	agentEnsRegistriesSettings *blockchain_settings.AgentEnsRegistriesSettings,
+	ethClientFactory *factory.EthClientFactory,
 ) *AgentEnsRegistryReader {
 	bindings := make(map[uint64]*abi.AgentEnsRegistry, len(*agentEnsRegistriesSettings))
 
@@ -32,7 +33,7 @@ func NewAgentEnsRegistryReader(
 			)
 		}
 
-		client, err := ethclient.Dial(chain.RpcHttpUrl)
+		client, err := ethClientFactory.For(chainId)
 		if err != nil {
 			logger.Fatal("failed to dial EVM RPC",
 				zap.Uint64("chain_id", chainId),

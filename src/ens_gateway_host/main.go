@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/6022-labs/agentic-ens-gateway/src/common/host_configurations"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/configurations"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/settings"
 	"github.com/gofiber/fiber/v2"
@@ -27,6 +29,10 @@ func main() {
 
 	container := configurations.ConfigureDI(config)
 	configurations.ConfigureLogging(container)
+
+	shutdownTelemetry := host_configurations.ConfigureTelemetry(container, configurations.AppName)
+	defer func() { _ = shutdownTelemetry(context.Background()) }()
+
 	configurations.ConfigureServer(container)
 
 	err = container.Invoke(func(app *fiber.App, logger *zap.Logger, hostSettings *settings.HostSettings) error {
@@ -54,6 +60,10 @@ func main() {
 			} else {
 				logger.Info("Server stopped")
 			}
+			if err := shutdownTelemetry(context.Background()); err != nil {
+				logger.Warn("Telemetry shutdown returned an error", zap.Error(err))
+			}
+
 			logger.Info("Shutdown complete")
 			_ = logger.Sync()
 			return nil
