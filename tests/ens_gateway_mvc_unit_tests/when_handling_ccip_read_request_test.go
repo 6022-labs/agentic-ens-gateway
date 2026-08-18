@@ -271,6 +271,13 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+
+			// The gateway is public: the 500 body must not echo the internal error.
+			var body map[string]string
+			assert.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
+			assert.Equal(t, "internal_error", body["code"])
+			assert.Equal(t, "failed to resolve query", body["message"])
+			assert.NotContains(t, body["message"], "boom")
 		})
 	})
 }
