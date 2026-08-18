@@ -102,9 +102,12 @@ func WhenResolvingOffchainQueryBeforeEach(t *testing.T) *WhenResolvingOffchainQu
 func TestWhenResolvingOffchainQuery(t *testing.T) {
 	t.Parallel()
 
-	request := &requests.ResolveOffchainQueryRequest{
-		Sender: "0x1111111111111111111111111111111111111111",
-		Data:   "0x010203",
+	// Execute sanitizes the request in place, so every parallel subtest needs its own.
+	newRequest := func() *requests.ResolveOffchainQueryRequest {
+		return &requests.ResolveOffchainQueryRequest{
+			Sender: "0x1111111111111111111111111111111111111111",
+			Data:   "0x010203",
+		}
 	}
 	senderAddress := common.HexToAddress("0x1111111111111111111111111111111111111111")
 	callData := []byte{0x01, 0x02, 0x03}
@@ -162,7 +165,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0xbeef", response.Data)
@@ -198,7 +201,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0xbeef", response.Data)
@@ -237,7 +240,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0xface", response.Data)
@@ -274,7 +277,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0x42", response.Data)
@@ -311,7 +314,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0x42", response.Data)
@@ -337,7 +340,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Execute(context.Background(), request)
+			_, err := suite.sut.Execute(context.Background(), newRequest())
 
 			var validationErr *apperrors.ValidationError
 			assert.ErrorAs(t, err, &validationErr)
@@ -362,7 +365,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Execute(context.Background(), request)
+			_, err := suite.sut.Execute(context.Background(), newRequest())
 
 			var validationErr *apperrors.ValidationError
 			assert.ErrorAs(t, err, &validationErr)
@@ -394,7 +397,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 				suite := WhenResolvingOffchainQueryBeforeEach(t)
 				initSuite(suite)
 
-				_, err := suite.sut.Execute(context.Background(), request)
+				_, err := suite.sut.Execute(context.Background(), newRequest())
 
 				assert.Error(t, err)
 			},
@@ -427,7 +430,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Execute(context.Background(), request)
+			_, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.Error(t, err)
 		})
@@ -462,7 +465,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			_, err := suite.sut.Execute(context.Background(), request)
+			_, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.Error(t, err)
 		})
@@ -491,7 +494,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0xb1b2", response.Data)
@@ -523,7 +526,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0xb1b2", response.Data)
@@ -565,7 +568,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 				suite := WhenResolvingOffchainQueryBeforeEach(t)
 				initSuite(suite)
 
-				response, err := suite.sut.Execute(context.Background(), request)
+				response, err := suite.sut.Execute(context.Background(), newRequest())
 
 				assert.NoError(t, err)
 				assert.Equal(t, "0xd1d2", response.Data)
@@ -603,7 +606,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0x42", response.Data)
@@ -640,7 +643,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite := WhenResolvingOffchainQueryBeforeEach(t)
 			initSuite(suite)
 
-			response, err := suite.sut.Execute(context.Background(), request)
+			response, err := suite.sut.Execute(context.Background(), newRequest())
 
 			assert.NoError(t, err)
 			assert.Equal(t, "0x42", response.Data)
@@ -673,7 +676,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 				suite := WhenResolvingOffchainQueryBeforeEach(t)
 				initSuite(suite)
 
-				_, err := suite.sut.Execute(context.Background(), request)
+				_, err := suite.sut.Execute(context.Background(), newRequest())
 
 				assert.Error(t, err)
 			},
