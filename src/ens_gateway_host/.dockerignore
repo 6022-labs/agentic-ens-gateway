@@ -1,4 +1,5 @@
-# Build context is the repo root.
+# Build context lives at repo root (Dockerfile copies ./go.mod etc), so this
+# file applies when the build context is the repo root.
 
 # VCS + IDE
 .git
@@ -12,7 +13,7 @@
 **/.env
 **/appsettings.json
 
-# Tests + mocks
+# Tests + mocks (not needed in the runtime image)
 tests/
 
 # Build / module artifacts

@@ -91,7 +91,7 @@ func (s *TelemetrySettings) resolveAuth(logger *zap.Logger) {
 	case hasBasic:
 		if s.AuthUsername == "" || s.AuthPassword == "" {
 			logger.Fatal(
-				"telemetry.auth_username and telemetry.auth_password must both be set (TELEMETRY__AUTH_USERNAME, TELEMETRY__AUTH_PASSWORD)",
+				"telemetry.auth_username and telemetry.auth_password must both be set",
 			)
 		}
 		s.AuthScheme = TelemetryAuthSchemeBasic

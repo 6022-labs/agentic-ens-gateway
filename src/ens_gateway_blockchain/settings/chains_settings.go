@@ -22,7 +22,9 @@ func NewChainsSettings(logger *zap.Logger, k *koanf.Koanf) *ChainsSettings {
 	}
 
 	if len(settings) == 0 {
-		logger.Fatal("chains settings is empty: configure at least one chain via appsettings.json or CHAINS__<chain_id>__* env vars")
+		logger.Fatal(
+			"chains settings is empty: configure at least one chain via appsettings.json or CHAINS__<chain_id>__* env vars",
+		)
 	}
 
 	for chainId, chain := range settings {

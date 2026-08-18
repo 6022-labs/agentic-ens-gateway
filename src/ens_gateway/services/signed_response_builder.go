@@ -60,7 +60,11 @@ func (b *SignedResponseBuilder) Build(
 
 // makeSignatureHash mirrors contracts/libraries/SignatureVerifier.sol:
 // keccak256(abi.encodePacked(hex"1900", target, expires, keccak256(request), keccak256(result))).
-func (b *SignedResponseBuilder) makeSignatureHash(target common.Address, expires uint64, request, result []byte) []byte {
+func (b *SignedResponseBuilder) makeSignatureHash(
+	target common.Address,
+	expires uint64,
+	request, result []byte,
+) []byte {
 	expiresBytes := make([]byte, 8)
 	binary.BigEndian.PutUint64(expiresBytes, expires)
 

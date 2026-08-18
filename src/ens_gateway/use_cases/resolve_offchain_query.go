@@ -155,7 +155,12 @@ func (u *ResolveOffchainQuery) textValue(
 				zap.String("key", query.Key),
 			)
 		case fallback != "":
-			u.ensResolutionMetrics.RecordFallback(ctx, "text", metrics_interfaces.FallbackOutcomeResolved, query.ChainId)
+			u.ensResolutionMetrics.RecordFallback(
+				ctx,
+				"text",
+				metrics_interfaces.FallbackOutcomeResolved,
+				query.ChainId,
+			)
 			source = metrics_interfaces.ResolutionSourceUniversalResolver
 			value = fallback
 		default:
@@ -217,7 +222,12 @@ func (u *ResolveOffchainQuery) addrValue(
 				zap.Uint64("chain_id", query.ChainId),
 			)
 		case fallback != (common.Address{}):
-			u.ensResolutionMetrics.RecordFallback(ctx, "addr", metrics_interfaces.FallbackOutcomeResolved, query.ChainId)
+			u.ensResolutionMetrics.RecordFallback(
+				ctx,
+				"addr",
+				metrics_interfaces.FallbackOutcomeResolved,
+				query.ChainId,
+			)
 			source = metrics_interfaces.ResolutionSourceUniversalResolver
 			value = fallback
 		default:
