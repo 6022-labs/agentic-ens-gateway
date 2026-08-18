@@ -1,16 +1,19 @@
 package ens_gateway_mvc
 
 import (
-	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/responses"
+	"github.com/6022-labs/agentic-ens-gateway/src/common/mvc"
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/gofiber/fiber/v2"
 )
 
 const HealthEndpoint = "/health"
 
-type HealthController struct{}
+type HealthController struct {
+	getHealth *use_cases.GetHealth
+}
 
-func NewHealthController() *HealthController {
-	return &HealthController{}
+func NewHealthController(getHealth *use_cases.GetHealth) *HealthController {
+	return &HealthController{getHealth: getHealth}
 }
 
 func (c *HealthController) RegisterRoutes(app fiber.Router) {
@@ -23,5 +26,10 @@ func (c *HealthController) RegisterRoutes(app fiber.Router) {
 // @Success 200 {object} responses.GetHealthResponse
 // @Router /health [get]
 func (c *HealthController) GetHealth(ctx *fiber.Ctx) error {
-	return ctx.JSON(&responses.GetHealthResponse{Status: "ok"})
+	response, err := c.getHealth.Execute(ctx.UserContext())
+	if err != nil {
+		return mvc.WriteError(ctx, err)
+	}
+
+	return ctx.JSON(response)
 }

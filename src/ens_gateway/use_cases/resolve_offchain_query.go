@@ -16,10 +16,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type ResolveOffchainQueryInterface interface {
-	Execute(ctx context.Context, request *requests.ResolveOffchainQueryRequest) (*responses.CcipReadResponse, error)
-}
-
 type ResolveOffchainQuery struct {
 	logger                  *zap.Logger
 	resolverServiceCodec    ens_gateway_interfaces.ResolverServiceCodecInterface
@@ -57,7 +53,13 @@ func (u *ResolveOffchainQuery) Execute(
 	ctx context.Context,
 	request *requests.ResolveOffchainQueryRequest,
 ) (*responses.CcipReadResponse, error) {
-	query, err := u.resolverServiceCodec.Decode(request.Data)
+	if err := request.ValidateAndSanitize(); err != nil {
+		return nil, err
+	}
+
+	callData := request.CallData()
+
+	query, err := u.resolverServiceCodec.Decode(callData)
 	if err != nil {
 		u.ensResolutionMetrics.RecordDecodeError(ctx, "undecodable_calldata")
 		return nil, errors.NewValidationError("data", fmt.Sprintf("invalid resolver call data: %s", err.Error()))
@@ -88,7 +90,7 @@ func (u *ResolveOffchainQuery) Execute(
 		return nil, err
 	}
 
-	signed, err := u.responseBuilder.Build(ctx, request.Sender, request.Data, result)
+	signed, err := u.responseBuilder.Build(ctx, request.SenderAddress(), callData, result)
 	u.ensResolutionMetrics.RecordSignedResponse(ctx, err)
 	if err != nil {
 		span.Fail(err)

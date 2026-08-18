@@ -17,7 +17,6 @@ const docTemplate = `{
     "paths": {
         "/health": {
             "get": {
-                "description": "Liveness probe for the ENS gateway.",
                 "produces": [
                     "application/json"
                 ],
@@ -37,7 +36,6 @@ const docTemplate = `{
         },
         "/{sender}": {
             "post": {
-                "description": "Resolves an ERC-3668 OffchainLookup. ` + "`" + `sender` + "`" + ` is the L1 resolver address; the body carries the 0x-hex resolver call data.",
                 "consumes": [
                     "application/json"
                 ],
@@ -62,7 +60,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/ens_gateway_mvc.ccipReadPostBody"
+                            "$ref": "#/definitions/requests.ResolveOffchainQueryRequest"
                         }
                     }
                 ],
@@ -76,19 +74,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -96,7 +88,6 @@ const docTemplate = `{
         },
         "/{sender}/{data}": {
             "get": {
-                "description": "Resolves an ERC-3668 OffchainLookup. ` + "`" + `sender` + "`" + ` is the L1 resolver address; ` + "`" + `data` + "`" + ` is the 0x-hex resolver call data, optionally suffixed with ` + "`" + `.json` + "`" + `.",
                 "produces": [
                     "application/json"
                 ],
@@ -114,7 +105,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "0x-hex resolver call data",
+                        "description": "0x-hex resolver call data (optional ` + "`" + `.json` + "`" + ` suffix)",
                         "name": "data",
                         "in": "path",
                         "required": true
@@ -130,19 +121,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/errors.ValidationError"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/errors.InternalError"
                         }
                     }
                 }
@@ -150,10 +135,35 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "ens_gateway_mvc.ccipReadPostBody": {
+        "errors.InternalError": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "errors.ValidationError": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "requests.ResolveOffchainQueryRequest": {
             "type": "object",
             "properties": {
                 "data": {
+                    "type": "string"
+                },
+                "sender": {
                     "type": "string"
                 }
             }

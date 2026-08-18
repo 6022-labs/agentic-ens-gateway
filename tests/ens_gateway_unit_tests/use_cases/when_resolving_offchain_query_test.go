@@ -94,9 +94,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 	t.Parallel()
 
 	request := &requests.ResolveOffchainQueryRequest{
-		Sender: common.HexToAddress("0x1111111111111111111111111111111111111111"),
-		Data:   []byte{0x01, 0x02, 0x03},
+		Sender: "0x1111111111111111111111111111111111111111",
+		Data:   "0x010203",
 	}
+	senderAddress := common.HexToAddress("0x1111111111111111111111111111111111111111")
+	callData := []byte{0x01, 0x02, 0x03}
 	var node [32]byte
 	node[31] = 0x07
 	const (
@@ -132,11 +134,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
 			cached := "https://cached.example/"
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(&cached)
 			suite.mockResolverServiceCodec.EXPECT().EncodeTextResult(cached).Return([]byte{0xde, 0xad}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0xde, 0xad}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0xde, 0xad}).
 				Return([]byte{0xbe, 0xef}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", true)
@@ -162,7 +164,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().
 				Text(gomock.Any(), chainId, node, key).
@@ -172,7 +174,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 				EncodeTextResult("https://agent.example/").
 				Return([]byte{0xde, 0xad}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0xde, 0xad}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0xde, 0xad}).
 				Return([]byte{0xbe, 0xef}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
@@ -198,7 +200,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Text(gomock.Any(), chainId, node, key).Return("", nil)
 			suite.mockUniversalResolverClient.EXPECT().
@@ -209,7 +211,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 				EncodeTextResult("https://l1.example/").
 				Return([]byte{0xab, 0xcd}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0xab, 0xcd}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0xab, 0xcd}).
 				Return([]byte{0xfa, 0xce}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
@@ -237,7 +239,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Text(gomock.Any(), chainId, node, key).Return("", nil)
 			suite.mockUniversalResolverClient.EXPECT().
@@ -246,7 +248,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResolutionCache.EXPECT().SetText(chainId, node, key, "")
 			suite.mockResolverServiceCodec.EXPECT().EncodeTextResult("").Return([]byte{0x00}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0x00}).
 				Return([]byte{0x42}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
@@ -274,7 +276,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Text(gomock.Any(), chainId, node, key).Return("", nil)
 			suite.mockUniversalResolverClient.EXPECT().
@@ -283,7 +285,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResolutionCache.EXPECT().SetText(chainId, node, key, "")
 			suite.mockResolverServiceCodec.EXPECT().EncodeTextResult("").Return([]byte{0x00}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0x00}).
 				Return([]byte{0x42}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
@@ -314,7 +316,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
 			suite.mockResolverServiceCodec.EXPECT().
-				Decode(request.Data).
+				Decode(callData).
 				Return(ens_gateway_interfaces.DecodedQuery{}, errors.New("bad selector"))
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordDecodeError(gomock.Any(), "undecodable_calldata")
@@ -339,7 +341,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
 			suite.mockResolverServiceCodec.EXPECT().
-				Decode(request.Data).
+				Decode(callData).
 				Return(ens_gateway_interfaces.DecodedQuery{Kind: 99}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordDecodeError(gomock.Any(), "unsupported_query_kind")
@@ -363,7 +365,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().
 				Text(gomock.Any(), chainId, node, key).
@@ -394,7 +396,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().
 				Text(gomock.Any(), chainId, node, key).
@@ -426,7 +428,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decoded, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decoded, nil)
 			suite.mockResolutionCache.EXPECT().GetText(chainId, node, key).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().
 				Text(gomock.Any(), chainId, node, key).
@@ -436,7 +438,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 				EncodeTextResult("https://agent.example/").
 				Return([]byte{0xde, 0xad}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0xde, 0xad}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0xde, 0xad}).
 				Return(nil, errors.New("sign failed"))
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
@@ -461,11 +463,11 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decodedAddr, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decodedAddr, nil)
 			suite.mockResolutionCache.EXPECT().GetAddr(chainId, node).Return(&l2Addr)
 			suite.mockResolverServiceCodec.EXPECT().EncodeAddrResult(l2Addr).Return([]byte{0xa1, 0xa2}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0xa1, 0xa2}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0xa1, 0xa2}).
 				Return([]byte{0xb1, 0xb2}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", true)
@@ -491,13 +493,13 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decodedAddr, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decodedAddr, nil)
 			suite.mockResolutionCache.EXPECT().GetAddr(chainId, node).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Addr(gomock.Any(), chainId, node).Return(l2Addr, nil)
 			suite.mockResolutionCache.EXPECT().SetAddr(chainId, node, l2Addr)
 			suite.mockResolverServiceCodec.EXPECT().EncodeAddrResult(l2Addr).Return([]byte{0xa1, 0xa2}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0xa1, 0xa2}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0xa1, 0xa2}).
 				Return([]byte{0xb1, 0xb2}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
@@ -525,7 +527,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			t.Parallel()
 
 			initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-				suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decodedAddr, nil)
+				suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decodedAddr, nil)
 				suite.mockResolutionCache.EXPECT().GetAddr(chainId, node).Return(nil)
 				suite.mockAgentEnsRegistryReader.EXPECT().
 					Addr(gomock.Any(), chainId, node).
@@ -536,7 +538,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 				suite.mockResolutionCache.EXPECT().SetAddr(chainId, node, l1Addr)
 				suite.mockResolverServiceCodec.EXPECT().EncodeAddrResult(l1Addr).Return([]byte{0xc1, 0xc2}, nil)
 				suite.mockResponseBuilder.EXPECT().
-					Build(gomock.Any(), request.Sender, request.Data, []byte{0xc1, 0xc2}).
+					Build(gomock.Any(), senderAddress, callData, []byte{0xc1, 0xc2}).
 					Return([]byte{0xd1, 0xd2}, nil)
 
 				suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
@@ -566,7 +568,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decodedAddr, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decodedAddr, nil)
 			suite.mockResolutionCache.EXPECT().GetAddr(chainId, node).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Addr(gomock.Any(), chainId, node).Return(common.Address{}, nil)
 			suite.mockUniversalResolverClient.EXPECT().
@@ -575,7 +577,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResolutionCache.EXPECT().SetAddr(chainId, node, common.Address{})
 			suite.mockResolverServiceCodec.EXPECT().EncodeAddrResult(common.Address{}).Return([]byte{0x00}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0x00}).
 				Return([]byte{0x42}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
@@ -603,7 +605,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decodedAddr, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decodedAddr, nil)
 			suite.mockResolutionCache.EXPECT().GetAddr(chainId, node).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().Addr(gomock.Any(), chainId, node).Return(common.Address{}, nil)
 			suite.mockUniversalResolverClient.EXPECT().
@@ -612,7 +614,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 			suite.mockResolutionCache.EXPECT().SetAddr(chainId, node, common.Address{})
 			suite.mockResolverServiceCodec.EXPECT().EncodeAddrResult(common.Address{}).Return([]byte{0x00}, nil)
 			suite.mockResponseBuilder.EXPECT().
-				Build(gomock.Any(), request.Sender, request.Data, []byte{0x00}).
+				Build(gomock.Any(), senderAddress, callData, []byte{0x00}).
 				Return([]byte{0x42}, nil)
 
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
@@ -642,7 +644,7 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenResolvingOffchainQueryTestingSuite) {
-			suite.mockResolverServiceCodec.EXPECT().Decode(request.Data).Return(decodedAddr, nil)
+			suite.mockResolverServiceCodec.EXPECT().Decode(callData).Return(decodedAddr, nil)
 			suite.mockResolutionCache.EXPECT().GetAddr(chainId, node).Return(nil)
 			suite.mockAgentEnsRegistryReader.EXPECT().
 				Addr(gomock.Any(), chainId, node).

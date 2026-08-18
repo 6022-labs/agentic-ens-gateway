@@ -1,4 +1,4 @@
-package controllers_test
+package ens_gateway_mvc_unit_tests_test
 
 import (
 	"io"
@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +22,7 @@ func TestWhenHandlingHealthRequest(t *testing.T) {
 			t.Parallel()
 
 			app := fiber.New()
-			ens_gateway_mvc.NewHealthController().RegisterRoutes(app)
+			ens_gateway_mvc.NewHealthController(use_cases.NewGetHealth()).RegisterRoutes(app)
 
 			req := httptest.NewRequest(http.MethodGet, "/health", nil)
 			resp, err := app.Test(req)

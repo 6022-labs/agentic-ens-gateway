@@ -67,10 +67,11 @@ func AddEnsGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
-	if err := container.Provide(
-		use_cases.NewResolveOffchainQuery,
-		dig.As(new(use_cases.ResolveOffchainQueryInterface)),
-	); err != nil {
+	if err := container.Provide(use_cases.NewResolveOffchainQuery); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(use_cases.NewGetHealth); err != nil {
 		panic(err)
 	}
 }
