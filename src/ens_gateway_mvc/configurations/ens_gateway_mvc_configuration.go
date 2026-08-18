@@ -3,6 +3,7 @@ package configurations
 import (
 	common_metrics "github.com/6022-labs/agentic-ens-gateway/src/common/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/metrics/interfaces"
+	mvc_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/middlewares"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
 	"go.uber.org/dig"
@@ -28,7 +29,7 @@ func provideController(container *dig.Container, ctor any) {
 	if err := container.Provide(
 		ctor,
 		dig.Group("controllers"),
-		dig.As(new(ens_gateway_mvc.ControllerInterface)),
+		dig.As(new(mvc_interfaces.ControllerInterface)),
 	); err != nil {
 		panic(err)
 	}
