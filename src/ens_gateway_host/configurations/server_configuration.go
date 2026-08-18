@@ -3,6 +3,7 @@ package configurations
 import (
 	mvc_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/middlewares"
+	"github.com/6022-labs/agentic-ens-gateway/src/common/settings"
 	_ "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/docs"
 	fiberzap "github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/contrib/otelfiber/v2"
@@ -25,10 +26,11 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer() *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName: AppName,
-		Network: "tcp",
+		AppName:   AppName,
+		Network:   "tcp",
+		BodyLimit: hostSettings.BodyLimitBytes,
 	})
 }
 

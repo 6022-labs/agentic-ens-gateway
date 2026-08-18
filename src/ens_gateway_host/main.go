@@ -8,8 +8,8 @@ import (
 	"syscall"
 
 	"github.com/6022-labs/agentic-ens-gateway/src/common/host_configurations"
+	"github.com/6022-labs/agentic-ens-gateway/src/common/settings"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/configurations"
-	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/settings"
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
@@ -22,13 +22,13 @@ import (
 func main() {
 	_ = godotenv.Load(".env")
 
-	config, err := configurations.LoadKoanfConfig()
+	config, err := host_configurations.LoadKoanfConfig()
 	if err != nil {
 		panic(err)
 	}
 
 	container := configurations.ConfigureDI(config)
-	configurations.ConfigureLogging(container)
+	host_configurations.ConfigureLogging(container)
 
 	shutdownTelemetry := host_configurations.ConfigureTelemetry(container, configurations.AppName)
 	defer func() { _ = shutdownTelemetry(context.Background()) }()
@@ -36,7 +36,7 @@ func main() {
 	configurations.ConfigureServer(container)
 
 	err = container.Invoke(func(app *fiber.App, logger *zap.Logger, hostSettings *settings.HostSettings) error {
-		bind := fmt.Sprintf(":%d", hostSettings.ApiPort)
+		bind := fmt.Sprintf("%s:%d", hostSettings.ListenAddress, hostSettings.ApiPort)
 		logger.Info("Starting ENS gateway server", zap.String("bind", bind))
 
 		serverErrCh := make(chan error, 1)
