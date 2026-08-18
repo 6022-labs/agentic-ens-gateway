@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	traces_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces/interfaces"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
@@ -54,12 +55,17 @@ func WhenHandlingCcipReadRequestBeforeEach(t *testing.T) *WhenHandlingCcipReadRe
 	mockResolutionSpan := traces_mocks.NewMockResolutionSpan(mockController)
 
 	resolveOffchainQuery := use_cases.NewResolveOffchainQuery(
-		zap.NewNop(),
 		mockResolverServiceCodec,
-		mockAgentEnsRegistryReader,
-		mockUniversalResolverClient,
+		services.NewRecordResolver(
+			zap.NewNop(),
+			mockResolverServiceCodec,
+			mockAgentEnsRegistryReader,
+			mockUniversalResolverClient,
+			mockResolutionCache,
+			mockEnsResolutionMetrics,
+			mockResolutionTracer,
+		),
 		mockResponseBuilder,
-		mockResolutionCache,
 		mockEnsResolutionMetrics,
 		mockResolutionTracer,
 	)

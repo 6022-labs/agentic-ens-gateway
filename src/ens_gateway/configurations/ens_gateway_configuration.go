@@ -67,6 +67,13 @@ func AddEnsGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	if err := container.Provide(
+		ens_gateway_services.NewRecordResolver,
+		dig.As(new(ens_gateway_interfaces.RecordResolverInterface)),
+	); err != nil {
+		panic(err)
+	}
+
 	if err := container.Provide(use_cases.NewResolveOffchainQuery); err != nil {
 		panic(err)
 	}

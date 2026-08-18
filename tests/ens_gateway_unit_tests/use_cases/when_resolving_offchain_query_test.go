@@ -7,6 +7,7 @@ import (
 
 	apperrors "github.com/6022-labs/agentic-ens-gateway/src/common/errors"
 	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/metrics/interfaces"
+	gateway_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	traces_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces/interfaces"
 	gateway_use_cases "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
@@ -77,13 +78,20 @@ func WhenResolvingOffchainQueryBeforeEach(t *testing.T) *WhenResolvingOffchainQu
 		mockResolutionCache:         mockResolutionCache,
 		mockEnsResolutionMetrics:    mockEnsResolutionMetrics,
 		logs:                        logs,
+		// The record resolver is exercised for real so the cache/registry/fallback
+		// expectations below keep asserting the same collaborations.
 		sut: gateway_use_cases.NewResolveOffchainQuery(
-			logger,
 			mockResolverServiceCodec,
-			mockAgentEnsRegistryReader,
-			mockUniversalResolverClient,
+			gateway_services.NewRecordResolver(
+				logger,
+				mockResolverServiceCodec,
+				mockAgentEnsRegistryReader,
+				mockUniversalResolverClient,
+				mockResolutionCache,
+				mockEnsResolutionMetrics,
+				mockResolutionTracer,
+			),
 			mockResponseBuilder,
-			mockResolutionCache,
 			mockEnsResolutionMetrics,
 			mockResolutionTracer,
 		),
