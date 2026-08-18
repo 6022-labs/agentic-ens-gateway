@@ -1,8 +1,6 @@
 package requests
 
 import (
-	"strings"
-
 	"github.com/6022-labs/agentic-ens-gateway/src/common/errors"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -18,10 +16,6 @@ type ResolveOffchainQueryRequest struct {
 }
 
 func (r *ResolveOffchainQueryRequest) ValidateAndSanitize() error {
-	r.Sender = strings.TrimSpace(r.Sender)
-	// The GET route accepts an optional `.json` suffix on the call data.
-	r.Data = strings.TrimSuffix(strings.TrimSpace(r.Data), ".json")
-
 	if !common.IsHexAddress(r.Sender) {
 		return errors.NewValidationError("sender", "invalid sender address")
 	}

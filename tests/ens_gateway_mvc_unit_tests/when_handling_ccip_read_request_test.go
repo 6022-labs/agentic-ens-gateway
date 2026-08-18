@@ -224,6 +224,43 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 		})
 	})
 
+	t.Run("Given a POST body carrying a .json suffix", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should not strip it, since only the GET path allows the suffix", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingCcipReadRequestBeforeEach(t)
+
+			req := httptest.NewRequest(
+				http.MethodPost,
+				"/"+testSender,
+				strings.NewReader(`{"data":"`+testDataHex+`.json"}`),
+			)
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := suite.app.Test(req)
+
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	})
+
+	t.Run("Given a sender padded with whitespace", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should reject it rather than trimming", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingCcipReadRequestBeforeEach(t)
+
+			req := httptest.NewRequest(http.MethodGet, "/%20"+testSender+"/"+testDataHex, nil)
+			resp, err := suite.app.Test(req)
+
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		})
+	})
+
 	t.Run("Given the use case fails with a validation error", func(t *testing.T) {
 		t.Parallel()
 
@@ -278,6 +315,33 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 			assert.Equal(t, "internal_error", body["code"])
 			assert.Equal(t, "failed to resolve query", body["message"])
 			assert.NotContains(t, body["message"], "boom")
+		})
+	})
+}
+
+func TestWhenHandlingAMalformedCcipReadBody(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a POST body that is not json", func(t *testing.T) {
+		t.Parallel()
+
+		t.Run("Should answer 400 with the body validation field", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenHandlingCcipReadRequestBeforeEach(t)
+
+			req := httptest.NewRequest(http.MethodPost, "/"+testSender, strings.NewReader("not json"))
+			req.Header.Set("Content-Type", "application/json")
+			resp, err := suite.app.Test(req)
+
+			assert.NoError(t, err)
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+
+			// The parser error must not reach the client; the shape is the same one main answered with.
+			var body map[string]string
+			assert.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
+			assert.Equal(t, "body", body["field"])
+			assert.Equal(t, "invalid request body", body["message"])
 		})
 	})
 }

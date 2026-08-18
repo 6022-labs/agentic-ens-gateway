@@ -1,6 +1,9 @@
 package ens_gateway_mvc
 
 import (
+	"strings"
+
+	"github.com/6022-labs/agentic-ens-gateway/src/common/errors"
 	"github.com/6022-labs/agentic-ens-gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/requests"
@@ -43,9 +46,11 @@ func (c *CcipReadController) RegisterRoutes(app fiber.Router) {
 func (c *CcipReadController) HandleGet(ctx *fiber.Ctx) error {
 	request := &requests.ResolveOffchainQueryRequest{}
 	if err := ctx.ParamsParser(request); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"code": "invalid_params", "message": err.Error()})
+		return mvc.WriteError(ctx, errors.NewValidationError("data", "invalid call data hex"))
 	}
+
+	// The GET route carries the call data in the path, where an optional `.json` suffix is allowed.
+	request.Data = strings.TrimSuffix(request.Data, ".json")
 
 	return c.resolve(ctx, request)
 }
@@ -64,8 +69,7 @@ func (c *CcipReadController) HandleGet(ctx *fiber.Ctx) error {
 func (c *CcipReadController) HandlePost(ctx *fiber.Ctx) error {
 	request := &requests.ResolveOffchainQueryRequest{}
 	if err := ctx.BodyParser(request); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"code": "invalid_body", "message": err.Error()})
+		return mvc.WriteError(ctx, errors.NewValidationError("body", "invalid request body"))
 	}
 
 	request.Sender = ctx.Params("sender")
