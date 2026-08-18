@@ -12,6 +12,7 @@ import (
 	traces_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces/interfaces"
 	gateway_use_cases "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/requests"
+	"github.com/6022-labs/agentic-ens-gateway/tests/common_tests/model_builders"
 	metrics_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/metrics_mocks/interfaces_mocks"
 	interfaces_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/services_mocks/interfaces_mocks"
 	traces_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/traces_mocks/interfaces_mocks"
@@ -117,22 +118,22 @@ func TestWhenResolvingOffchainQuery(t *testing.T) {
 	innerData := []byte{0xaa, 0xbb, 0xcc}
 	addrInnerData := []byte{0xdd, 0xee, 0xff}
 
-	decoded := ens_gateway_interfaces.DecodedQuery{
-		Kind:      ens_gateway_interfaces.QueryKindText,
-		ChainId:   chainId,
-		Node:      node,
-		Key:       key,
-		DnsName:   dnsName,
-		InnerData: innerData,
-	}
+	decoded := model_builders.NewDecodedQueryBuilder().
+		WithChainId(chainId).
+		WithNode(node).
+		WithKey(key).
+		WithDnsName(dnsName).
+		WithInnerData(innerData).
+		Build()
 
-	decodedAddr := ens_gateway_interfaces.DecodedQuery{
-		Kind:      ens_gateway_interfaces.QueryKindAddr,
-		ChainId:   chainId,
-		Node:      node,
-		DnsName:   dnsName,
-		InnerData: addrInnerData,
-	}
+	decodedAddr := model_builders.NewDecodedQueryBuilder().
+		WithKind(ens_gateway_interfaces.QueryKindAddr).
+		WithChainId(chainId).
+		WithNode(node).
+		WithKey("").
+		WithDnsName(dnsName).
+		WithInnerData(addrInnerData).
+		Build()
 
 	l2Addr := common.HexToAddress("0x2222222222222222222222222222222222222222")
 	l1Addr := common.HexToAddress("0x3333333333333333333333333333333333333333")

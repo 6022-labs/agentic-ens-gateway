@@ -15,6 +15,7 @@ import (
 	traces_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces/interfaces"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
+	"github.com/6022-labs/agentic-ens-gateway/tests/common_tests/model_builders"
 	metrics_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/metrics_mocks/interfaces_mocks"
 	services_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/services_mocks/interfaces_mocks"
 	traces_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/traces_mocks/interfaces_mocks"
@@ -95,9 +96,7 @@ func expectResolvedText(suite *WhenHandlingCcipReadRequestTestingSuite, signed [
 
 	suite.mockResolverServiceCodec.EXPECT().
 		Decode(gomock.Any()).
-		Return(ens_gateway_interfaces.DecodedQuery{
-			Kind: ens_gateway_interfaces.QueryKindText, ChainId: 80002, Node: node, Key: "url",
-		}, nil)
+		Return(model_builders.NewDecodedQueryBuilder().WithNode(node).Build(), nil)
 
 	suite.mockResolutionTracer.EXPECT().
 		StartResolution(gomock.Any(), "text", uint64(80002)).

@@ -9,22 +9,13 @@ import (
 
 	gateway_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
 	gateway_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/settings"
+	services_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
-
-// failingSigner is an in-test SignerInterface fake whose Sign always errors.
-type failingSigner struct{}
-
-func (failingSigner) Sign([]byte) ([]byte, error) {
-	return nil, errors.New("signer failed")
-}
-
-func (failingSigner) Address() common.Address {
-	return common.Address{}
-}
 
 func TestWhenBuildingSignedResponse(t *testing.T) {
 	t.Parallel()
@@ -98,8 +89,12 @@ func TestWhenBuildingSignedResponse(t *testing.T) {
 		t.Run("Should return the wrapped error", func(t *testing.T) {
 			t.Parallel()
 
+			mockSigner := services_mocks.NewMockSignerInterface(gomock.NewController(t))
+			mockSigner.EXPECT().Address().Return(common.Address{}).AnyTimes()
+			mockSigner.EXPECT().Sign(gomock.Any()).Return(nil, errors.New("signer failed"))
+
 			sut := gateway_services.NewSignedResponseBuilder(
-				failingSigner{},
+				mockSigner,
 				&gateway_settings.SignedResponseSettings{TtlSeconds: 300},
 			)
 
