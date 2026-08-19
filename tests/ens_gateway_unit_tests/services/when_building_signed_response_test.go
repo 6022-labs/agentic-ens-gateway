@@ -17,6 +17,26 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
+type WhenBuildingSignedResponseTestingSuite struct {
+	sut *gateway_services.SignedResponseBuilder
+
+	mockSigner *services_mocks.MockSignerInterface
+}
+
+func WhenBuildingSignedResponseBeforeEach(t *testing.T) *WhenBuildingSignedResponseTestingSuite {
+	mockController := gomock.NewController(t)
+
+	mockSigner := services_mocks.NewMockSignerInterface(mockController)
+
+	return &WhenBuildingSignedResponseTestingSuite{
+		sut: gateway_services.NewSignedResponseBuilder(
+			mockSigner,
+			&gateway_settings.SignedResponseSettings{TtlSeconds: 300},
+		),
+		mockSigner: mockSigner,
+	}
+}
+
 func TestWhenBuildingSignedResponse(t *testing.T) {
 	t.Parallel()
 
@@ -86,19 +106,18 @@ func TestWhenBuildingSignedResponse(t *testing.T) {
 	t.Run("Given the signer fails", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenBuildingSignedResponseTestingSuite) {
+			suite.mockSigner.EXPECT().Address().Return(common.Address{}).AnyTimes()
+			suite.mockSigner.EXPECT().Sign(gomock.Any()).Return(nil, errors.New("signer failed"))
+		}
+
 		t.Run("Should return the wrapped error", func(t *testing.T) {
 			t.Parallel()
 
-			mockSigner := services_mocks.NewMockSignerInterface(gomock.NewController(t))
-			mockSigner.EXPECT().Address().Return(common.Address{}).AnyTimes()
-			mockSigner.EXPECT().Sign(gomock.Any()).Return(nil, errors.New("signer failed"))
+			suite := WhenBuildingSignedResponseBeforeEach(t)
+			initSuite(suite)
 
-			sut := gateway_services.NewSignedResponseBuilder(
-				mockSigner,
-				&gateway_settings.SignedResponseSettings{TtlSeconds: 300},
-			)
-
-			response, err := sut.Build(context.Background(), resolver, callData, result)
+			response, err := suite.sut.Build(context.Background(), resolver, callData, result)
 
 			assert.Error(t, err)
 			assert.Nil(t, response)

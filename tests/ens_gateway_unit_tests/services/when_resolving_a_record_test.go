@@ -77,16 +77,20 @@ func TestWhenResolvingARecord(t *testing.T) {
 	t.Run("Given the text record is cached", func(t *testing.T) {
 		t.Parallel()
 
+		query := model_builders.NewDecodedQueryBuilder().Build()
+		cached := "https://agent.example/"
+
+		initSuite := func(suite *WhenResolvingARecordTestingSuite) {
+			suite.mockResolutionCache.EXPECT().GetText(query.ChainId, query.Node, query.Key).Return(&cached)
+			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", true)
+			suite.mockResolverServiceCodec.EXPECT().EncodeTextResult(cached).Return([]byte{0xde, 0xad}, nil)
+		}
+
 		t.Run("Should answer from the cache without reading the registry", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenResolvingARecordBeforeEach(t)
-			query := model_builders.NewDecodedQueryBuilder().Build()
-			cached := "https://agent.example/"
-
-			suite.mockResolutionCache.EXPECT().GetText(query.ChainId, query.Node, query.Key).Return(&cached)
-			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", true)
-			suite.mockResolverServiceCodec.EXPECT().EncodeTextResult(cached).Return([]byte{0xde, 0xad}, nil)
+			initSuite(suite)
 
 			result, source, err := suite.sut.Resolve(context.Background(), query)
 
@@ -99,12 +103,9 @@ func TestWhenResolvingARecord(t *testing.T) {
 	t.Run("Given the registry answers empty and the L1 fallback resolves", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should return the fallback value and report the universal resolver as the source", func(t *testing.T) {
-			t.Parallel()
+		query := model_builders.NewDecodedQueryBuilder().Build()
 
-			suite := WhenResolvingARecordBeforeEach(t)
-			query := model_builders.NewDecodedQueryBuilder().Build()
-
+		initSuite := func(suite *WhenResolvingARecordTestingSuite) {
 			suite.mockResolutionCache.EXPECT().GetText(query.ChainId, query.Node, query.Key).Return(nil)
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "text", false)
 			suite.mockAgentEnsRegistryReader.EXPECT().
@@ -117,6 +118,13 @@ func TestWhenResolvingARecord(t *testing.T) {
 				RecordFallback(gomock.Any(), "text", "resolved", query.ChainId)
 			suite.mockResolutionCache.EXPECT().SetText(query.ChainId, query.Node, query.Key, "from-l1")
 			suite.mockResolverServiceCodec.EXPECT().EncodeTextResult("from-l1").Return([]byte{0x01}, nil)
+		}
+
+		t.Run("Should return the fallback value and report the universal resolver as the source", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingARecordBeforeEach(t)
+			initSuite(suite)
 
 			result, source, err := suite.sut.Resolve(context.Background(), query)
 
@@ -129,19 +137,23 @@ func TestWhenResolvingARecord(t *testing.T) {
 	t.Run("Given the registry read fails", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should surface the error without consulting the L1 fallback", func(t *testing.T) {
-			t.Parallel()
+		query := model_builders.NewDecodedQueryBuilder().
+			WithKind(ens_gateway_interfaces.QueryKindAddr).
+			Build()
 
-			suite := WhenResolvingARecordBeforeEach(t)
-			query := model_builders.NewDecodedQueryBuilder().
-				WithKind(ens_gateway_interfaces.QueryKindAddr).
-				Build()
-
+		initSuite := func(suite *WhenResolvingARecordTestingSuite) {
 			suite.mockResolutionCache.EXPECT().GetAddr(query.ChainId, query.Node).Return(nil)
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
 			suite.mockAgentEnsRegistryReader.EXPECT().
 				Addr(gomock.Any(), query.ChainId, query.Node).
 				Return(common.Address{}, assert.AnError)
+		}
+
+		t.Run("Should surface the error without consulting the L1 fallback", func(t *testing.T) {
+			t.Parallel()
+
+			suite := WhenResolvingARecordBeforeEach(t)
+			initSuite(suite)
 
 			result, _, err := suite.sut.Resolve(context.Background(), query)
 
