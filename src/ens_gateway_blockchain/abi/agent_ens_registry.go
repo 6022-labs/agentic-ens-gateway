@@ -1750,10 +1750,10 @@ func (_AgentEnsRegistry *AgentEnsRegistryFilterer) ParseSubnodeProvisioned(log t
 }
 
 // --- RawLog() methods added by go generate ---
-func (e AgentEnsRegistryAgentTextUpdated) RawLog() types.Log { return e.Raw }
-func (e AgentEnsRegistryManagerUpdated) RawLog() types.Log { return e.Raw }
-func (e AgentEnsRegistryParentNodeUpdated) RawLog() types.Log { return e.Raw }
-func (e AgentEnsRegistryRoleAdminChanged) RawLog() types.Log { return e.Raw }
-func (e AgentEnsRegistryRoleGranted) RawLog() types.Log { return e.Raw }
-func (e AgentEnsRegistryRoleRevoked) RawLog() types.Log { return e.Raw }
+func (e AgentEnsRegistryAgentTextUpdated) RawLog() types.Log   { return e.Raw }
+func (e AgentEnsRegistryManagerUpdated) RawLog() types.Log     { return e.Raw }
+func (e AgentEnsRegistryParentNodeUpdated) RawLog() types.Log  { return e.Raw }
+func (e AgentEnsRegistryRoleAdminChanged) RawLog() types.Log   { return e.Raw }
+func (e AgentEnsRegistryRoleGranted) RawLog() types.Log        { return e.Raw }
+func (e AgentEnsRegistryRoleRevoked) RawLog() types.Log        { return e.Raw }
 func (e AgentEnsRegistrySubnodeProvisioned) RawLog() types.Log { return e.Raw }

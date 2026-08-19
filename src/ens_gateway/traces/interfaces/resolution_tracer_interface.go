@@ -9,9 +9,3 @@ type ResolutionTracerInterface interface {
 	StartRegistryRead(ctx context.Context, chainId uint64) (context.Context, Span)
 	StartUniversalResolverFallback(ctx context.Context, chainId uint64) (context.Context, Span)
 }
-
-// ResolutionSpan is the root span of a resolution; the answering tier is only known at the end.
-type ResolutionSpan interface {
-	Span
-	RecordSource(source string)
-}

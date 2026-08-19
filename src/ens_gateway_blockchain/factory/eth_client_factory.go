@@ -1,6 +1,8 @@
 package factory
 
 import (
+	"time"
+
 	"context"
 	"fmt"
 	"net/http"
@@ -48,6 +50,7 @@ func (f *EthClientFactory) For(chainId uint64) (*ethclient.Client, error) {
 	}
 
 	httpClient := &http.Client{
+		Timeout: time.Duration(chain.RequestTimeoutSeconds) * time.Second,
 		Transport: metrics.NewRpcRoundTripper(
 			http.DefaultTransport,
 			f.blockchainRpcMetrics,

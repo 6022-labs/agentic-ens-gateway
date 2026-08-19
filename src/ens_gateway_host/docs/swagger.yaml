@@ -1,8 +1,24 @@
 basePath: /
 definitions:
-  ens_gateway_mvc.ccipReadPostBody:
+  errors.InternalError:
+    properties:
+      code:
+        type: string
+      message:
+        type: string
+    type: object
+  errors.ValidationError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  requests.ResolveOffchainQueryRequest:
     properties:
       data:
+        type: string
+      sender:
         type: string
     type: object
   responses.CcipReadResponse:
@@ -25,8 +41,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver
-        address; the body carries the 0x-hex resolver call data.
+      description: |-
+        Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;
+        the body carries the 0x-hex resolver call data.
       parameters:
       - description: L1 resolver address
         in: path
@@ -38,7 +55,7 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/ens_gateway_mvc.ccipReadPostBody'
+          $ref: '#/definitions/requests.ResolveOffchainQueryRequest'
       produces:
       - application/json
       responses:
@@ -49,30 +66,26 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/errors.ValidationError'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/errors.InternalError'
       summary: CCIP-Read gateway (POST)
       tags:
       - CCIP-Read
   /{sender}/{data}:
     get:
-      description: Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver
-        address; `data` is the 0x-hex resolver call data, optionally suffixed with
-        `.json`.
+      description: |-
+        Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;
+        `data` is the 0x-hex resolver call data, optionally suffixed with `.json`.
       parameters:
       - description: L1 resolver address
         in: path
         name: sender
         required: true
         type: string
-      - description: 0x-hex resolver call data
+      - description: 0x-hex resolver call data (optional `.json` suffix)
         in: path
         name: data
         required: true
@@ -87,15 +100,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/errors.ValidationError'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/errors.InternalError'
       summary: CCIP-Read gateway (GET)
       tags:
       - CCIP-Read

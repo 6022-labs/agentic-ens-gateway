@@ -58,7 +58,9 @@ func NewResolverServiceCodec() *ResolverServiceCodec {
 // addr(bytes32 node).
 func (c *ResolverServiceCodec) Decode(callData []byte) (ens_gateway_interfaces.DecodedQuery, error) {
 	if len(callData) < 4 || !bytes.Equal(callData[:4], c.resolveSelector) {
-		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("unexpected call data selector, want resolve(bytes,bytes)")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf(
+			"unexpected call data selector, want resolve(bytes,bytes)",
+		)
 	}
 
 	outer, err := c.resolveArgs.Unpack(callData[4:])
@@ -90,11 +92,16 @@ func (c *ResolverServiceCodec) Decode(callData []byte) (ens_gateway_interfaces.D
 	case bytes.Equal(innerSelector, c.addrSelector):
 		return c.decodeAddr(chainId, name, innerData)
 	default:
-		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("unsupported inner selector, want text(bytes32,string) or addr(bytes32)")
+		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf(
+			"unsupported inner selector, want text(bytes32,string) or addr(bytes32)",
+		)
 	}
 }
 
-func (c *ResolverServiceCodec) decodeText(chainId uint64, name, innerData []byte) (ens_gateway_interfaces.DecodedQuery, error) {
+func (c *ResolverServiceCodec) decodeText(
+	chainId uint64,
+	name, innerData []byte,
+) (ens_gateway_interfaces.DecodedQuery, error) {
 	inner, err := c.textArgs.Unpack(innerData[4:])
 	if err != nil {
 		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode text(bytes32,string): %w", err)
@@ -117,7 +124,10 @@ func (c *ResolverServiceCodec) decodeText(chainId uint64, name, innerData []byte
 	}, nil
 }
 
-func (c *ResolverServiceCodec) decodeAddr(chainId uint64, name, innerData []byte) (ens_gateway_interfaces.DecodedQuery, error) {
+func (c *ResolverServiceCodec) decodeAddr(
+	chainId uint64,
+	name, innerData []byte,
+) (ens_gateway_interfaces.DecodedQuery, error) {
 	inner, err := c.addrArgs.Unpack(innerData[4:])
 	if err != nil {
 		return ens_gateway_interfaces.DecodedQuery{}, fmt.Errorf("decode addr(bytes32): %w", err)

@@ -68,7 +68,9 @@ func NewUniversalResolverSettings(logger *zap.Logger) *UniversalResolverSettings
 // Get returns the UniversalResolver chain id and address that the given source
 // chain falls back to. ok is false when no mapping exists for the source chain
 // or when the mapped resolver chain has no configured address.
-func (s *UniversalResolverSettings) Get(sourceChainId uint64) (universalResolverChainId uint64, addr common.Address, ok bool) {
+func (s *UniversalResolverSettings) Get(
+	sourceChainId uint64,
+) (universalResolverChainId uint64, addr common.Address, ok bool) {
 	if s == nil {
 		return 0, common.Address{}, false
 	}

@@ -1,9 +1,10 @@
 package configurations
 
 import (
+	mvc_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/middlewares"
+	"github.com/6022-labs/agentic-ens-gateway/src/common/settings"
 	_ "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/docs"
-	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
 	fiberzap "github.com/gofiber/contrib/fiberzap/v2"
 	"github.com/gofiber/contrib/otelfiber/v2"
 	"github.com/gofiber/fiber/v2"
@@ -25,10 +26,11 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer() *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName: AppName,
-		Network: "tcp",
+		AppName:   AppName,
+		Network:   "tcp",
+		BodyLimit: hostSettings.BodyLimitBytes,
 	})
 }
 
@@ -38,7 +40,7 @@ type registerRoutesParams struct {
 	App            *fiber.App
 	Logger         *zap.Logger
 	RequestMetrics *mvc_middlewares.ApiRequestMetricsMiddleware
-	Controllers    []ens_gateway_mvc.ControllerInterface `group:"controllers"`
+	Controllers    []mvc_interfaces.ControllerInterface `group:"controllers"`
 }
 
 func registerRoutes(p registerRoutesParams) {

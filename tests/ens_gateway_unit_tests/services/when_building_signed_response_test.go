@@ -9,21 +9,32 @@ import (
 
 	gateway_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
 	gateway_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/settings"
+	services_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/services_mocks/interfaces_mocks"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
-// failingSigner is an in-test SignerInterface fake whose Sign always errors.
-type failingSigner struct{}
+type WhenBuildingSignedResponseTestingSuite struct {
+	sut *gateway_services.SignedResponseBuilder
 
-func (failingSigner) Sign([]byte) ([]byte, error) {
-	return nil, errors.New("signer failed")
+	mockSigner *services_mocks.MockSignerInterface
 }
 
-func (failingSigner) Address() common.Address {
-	return common.Address{}
+func WhenBuildingSignedResponseBeforeEach(t *testing.T) *WhenBuildingSignedResponseTestingSuite {
+	mockController := gomock.NewController(t)
+
+	mockSigner := services_mocks.NewMockSignerInterface(mockController)
+
+	return &WhenBuildingSignedResponseTestingSuite{
+		sut: gateway_services.NewSignedResponseBuilder(
+			mockSigner,
+			&gateway_settings.SignedResponseSettings{TtlSeconds: 300},
+		),
+		mockSigner: mockSigner,
+	}
 }
 
 func TestWhenBuildingSignedResponse(t *testing.T) {
@@ -95,15 +106,18 @@ func TestWhenBuildingSignedResponse(t *testing.T) {
 	t.Run("Given the signer fails", func(t *testing.T) {
 		t.Parallel()
 
+		initSuite := func(suite *WhenBuildingSignedResponseTestingSuite) {
+			suite.mockSigner.EXPECT().Address().Return(common.Address{}).AnyTimes()
+			suite.mockSigner.EXPECT().Sign(gomock.Any()).Return(nil, errors.New("signer failed"))
+		}
+
 		t.Run("Should return the wrapped error", func(t *testing.T) {
 			t.Parallel()
 
-			sut := gateway_services.NewSignedResponseBuilder(
-				failingSigner{},
-				&gateway_settings.SignedResponseSettings{TtlSeconds: 300},
-			)
+			suite := WhenBuildingSignedResponseBeforeEach(t)
+			initSuite(suite)
 
-			response, err := sut.Build(context.Background(), resolver, callData, result)
+			response, err := suite.sut.Build(context.Background(), resolver, callData, result)
 
 			assert.Error(t, err)
 			assert.Nil(t, response)

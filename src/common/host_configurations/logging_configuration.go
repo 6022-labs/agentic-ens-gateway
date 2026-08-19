@@ -1,4 +1,4 @@
-package configurations
+package host_configurations
 
 import (
 	"os"

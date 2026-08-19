@@ -28,15 +28,16 @@ func NewAgentEnsRegistryReader(
 		chain := chainsSettings.Get(chainId)
 		if chain == nil {
 			logger.Fatal(
-				"AgentEnsRegistry configured for a chain with no RPC url; add the chain to appsettings.json (chains.<id>.rpc_http_url)",
-				zap.Uint64("chain_id", chainId),
+				"AgentEnsRegistry configured for a chain with no RPC url; "+
+					"add the chain to appsettings.json (chains.<id>.rpc_http_url)",
+				zap.Uint64("chainId", chainId),
 			)
 		}
 
 		client, err := ethClientFactory.For(chainId)
 		if err != nil {
 			logger.Fatal("failed to dial EVM RPC",
-				zap.Uint64("chain_id", chainId),
+				zap.Uint64("chainId", chainId),
 				zap.Error(err),
 			)
 		}
@@ -44,14 +45,14 @@ func NewAgentEnsRegistryReader(
 		binding, err := abi.NewAgentEnsRegistry(address, client)
 		if err != nil {
 			logger.Fatal("failed to bind AgentEnsRegistry",
-				zap.Uint64("chain_id", chainId),
+				zap.Uint64("chainId", chainId),
 				zap.Error(err),
 			)
 		}
 
 		bindings[chainId] = binding
 		logger.Info("bound AgentEnsRegistry",
-			zap.Uint64("chain_id", chainId),
+			zap.Uint64("chainId", chainId),
 			zap.String("address", address.Hex()),
 		)
 	}
