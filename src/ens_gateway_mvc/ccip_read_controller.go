@@ -1,6 +1,7 @@
 package ens_gateway_mvc
 
 import (
+	stderrors "errors"
 	"strings"
 
 	"github.com/6022-labs/agentic-ens-gateway/src/common/errors"
@@ -35,6 +36,8 @@ func (c *CcipReadController) RegisterRoutes(app fiber.Router) {
 
 // HandleGet resolves a CCIP-Read query passed entirely in the path.
 // @Summary CCIP-Read gateway (GET)
+// @Description Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;
+// @Description `data` is the 0x-hex resolver call data, optionally suffixed with `.json`.
 // @Tags CCIP-Read
 // @Produce json
 // @Param sender path string true "L1 resolver address"
@@ -57,6 +60,8 @@ func (c *CcipReadController) HandleGet(ctx *fiber.Ctx) error {
 
 // HandlePost resolves a CCIP-Read query whose call data arrives in the body.
 // @Summary CCIP-Read gateway (POST)
+// @Description Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;
+// @Description the body carries the 0x-hex resolver call data.
 // @Tags CCIP-Read
 // @Accept json
 // @Produce json
@@ -80,7 +85,15 @@ func (c *CcipReadController) HandlePost(ctx *fiber.Ctx) error {
 func (c *CcipReadController) resolve(ctx *fiber.Ctx, request *requests.ResolveOffchainQueryRequest) error {
 	response, err := c.resolveOffchainQuery.Execute(ctx.UserContext(), request)
 	if err != nil {
-		c.logger.Error("failed to resolve offchain query", zap.Error(err))
+		// A rejected request is caller error, not gateway error: logging it at Error lets any
+		// unauthenticated caller drive the error rate.
+		var validationError *errors.ValidationError
+		if stderrors.As(err, &validationError) {
+			c.logger.Debug("rejected offchain query", zap.Error(err))
+		} else {
+			c.logger.Error("failed to resolve offchain query", zap.Error(err))
+		}
+
 		return mvc.WriteError(ctx, err)
 	}
 

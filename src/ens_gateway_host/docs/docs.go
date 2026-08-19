@@ -17,6 +17,7 @@ const docTemplate = `{
     "paths": {
         "/health": {
             "get": {
+                "description": "Liveness probe for the ENS gateway.",
                 "produces": [
                     "application/json"
                 ],
@@ -36,6 +37,7 @@ const docTemplate = `{
         },
         "/{sender}": {
             "post": {
+                "description": "Resolves an ERC-3668 OffchainLookup. ` + "`" + `sender` + "`" + ` is the L1 resolver address;\nthe body carries the 0x-hex resolver call data.",
                 "consumes": [
                     "application/json"
                 ],
@@ -88,6 +90,7 @@ const docTemplate = `{
         },
         "/{sender}/{data}": {
             "get": {
+                "description": "Resolves an ERC-3668 OffchainLookup. ` + "`" + `sender` + "`" + ` is the L1 resolver address;\n` + "`" + `data` + "`" + ` is the 0x-hex resolver call data, optionally suffixed with ` + "`" + `.json` + "`" + `.",
                 "produces": [
                     "application/json"
                 ],

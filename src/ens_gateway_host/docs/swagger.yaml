@@ -41,6 +41,9 @@ paths:
     post:
       consumes:
       - application/json
+      description: |-
+        Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;
+        the body carries the 0x-hex resolver call data.
       parameters:
       - description: L1 resolver address
         in: path
@@ -73,6 +76,9 @@ paths:
       - CCIP-Read
   /{sender}/{data}:
     get:
+      description: |-
+        Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;
+        `data` is the 0x-hex resolver call data, optionally suffixed with `.json`.
       parameters:
       - description: L1 resolver address
         in: path
@@ -104,6 +110,7 @@ paths:
       - CCIP-Read
   /health:
     get:
+      description: Liveness probe for the ENS gateway.
       produces:
       - application/json
       responses:

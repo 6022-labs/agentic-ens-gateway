@@ -23,7 +23,8 @@ func WriteError(ctx *fiber.Ctx, err error) error {
 	case *errors.InternalError:
 		return ctx.Status(fiber.StatusInternalServerError).JSON(e)
 	default:
+		// These services are publicly reachable: an unrecognized error must not leak its text.
 		return ctx.Status(fiber.StatusInternalServerError).
-			JSON(errors.NewInternalError("internal_error", err.Error()))
+			JSON(errors.NewInternalError("internal_error", "internal error"))
 	}
 }

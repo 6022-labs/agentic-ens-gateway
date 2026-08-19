@@ -245,10 +245,10 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 		})
 	})
 
-	t.Run("Given a sender padded with whitespace", func(t *testing.T) {
+	t.Run("Given a sender whose path segment is not a bare address", func(t *testing.T) {
 		t.Parallel()
 
-		t.Run("Should reject it rather than trimming", func(t *testing.T) {
+		t.Run("Should reject it", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingCcipReadRequestBeforeEach(t)
@@ -314,7 +314,6 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 			assert.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
 			assert.Equal(t, "internal_error", body["code"])
 			assert.Equal(t, "failed to resolve query", body["message"])
-			assert.NotContains(t, body["message"], "boom")
 		})
 	})
 }

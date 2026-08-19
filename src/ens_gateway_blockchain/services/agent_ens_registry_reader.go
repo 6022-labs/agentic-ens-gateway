@@ -28,7 +28,8 @@ func NewAgentEnsRegistryReader(
 		chain := chainsSettings.Get(chainId)
 		if chain == nil {
 			logger.Fatal(
-				"AgentEnsRegistry configured for a chain with no RPC url; set chains.<id>.rpc_http_url",
+				"AgentEnsRegistry configured for a chain with no RPC url; "+
+					"add the chain to appsettings.json (chains.<id>.rpc_http_url)",
 				zap.Uint64("chain_id", chainId),
 			)
 		}

@@ -21,6 +21,7 @@ func (c *HealthController) RegisterRoutes(app fiber.Router) {
 }
 
 // @Summary Health check
+// @Description Liveness probe for the ENS gateway.
 // @Tags Health
 // @Produce json
 // @Success 200 {object} responses.GetHealthResponse

@@ -64,6 +64,7 @@
     "paths": {
         "/health": {
             "get": {
+                "description": "Liveness probe for the ENS gateway.",
                 "responses": {
                     "200": {
                         "content": {
@@ -84,6 +85,7 @@
         },
         "/{sender}": {
             "post": {
+                "description": "Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;\nthe body carries the 0x-hex resolver call data.",
                 "parameters": [
                     {
                         "description": "L1 resolver address",
@@ -155,6 +157,7 @@
         },
         "/{sender}/{data}": {
             "get": {
+                "description": "Resolves an ERC-3668 OffchainLookup. `sender` is the L1 resolver address;\n`data` is the 0x-hex resolver call data, optionally suffixed with `.json`.",
                 "parameters": [
                     {
                         "description": "L1 resolver address",
