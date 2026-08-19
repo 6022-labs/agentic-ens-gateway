@@ -98,7 +98,7 @@ func (s *RecordResolver) textValue(
 			s.ensResolutionMetrics.RecordFallback(ctx, "text", metrics_interfaces.FallbackOutcomeFailed, query.ChainId)
 			s.logger.Warn("L1 universal resolver fallback failed",
 				zap.Error(fallbackErr),
-				zap.Uint64("chain_id", query.ChainId),
+				zap.Uint64("chainId", query.ChainId),
 				zap.String("key", query.Key),
 			)
 		case fallback != "":
@@ -166,7 +166,7 @@ func (s *RecordResolver) addrValue(
 			s.ensResolutionMetrics.RecordFallback(ctx, "addr", metrics_interfaces.FallbackOutcomeFailed, query.ChainId)
 			s.logger.Warn("L1 universal resolver fallback failed",
 				zap.Error(fallbackErr),
-				zap.Uint64("chain_id", query.ChainId),
+				zap.Uint64("chainId", query.ChainId),
 			)
 		case fallback != (common.Address{}):
 			s.ensResolutionMetrics.RecordFallback(

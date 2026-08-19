@@ -2,6 +2,7 @@ package services_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	gateway_services "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
@@ -146,7 +147,7 @@ func TestWhenResolvingARecord(t *testing.T) {
 			suite.mockEnsResolutionMetrics.EXPECT().RecordCacheResult(gomock.Any(), "addr", false)
 			suite.mockAgentEnsRegistryReader.EXPECT().
 				Addr(gomock.Any(), query.ChainId, query.Node).
-				Return(common.Address{}, assert.AnError)
+				Return(common.Address{}, errors.New("registry read failed"))
 		}
 
 		t.Run("Should surface the error without consulting the L1 fallback", func(t *testing.T) {

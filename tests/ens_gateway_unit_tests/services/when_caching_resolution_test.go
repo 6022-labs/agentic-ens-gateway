@@ -20,8 +20,8 @@ type WhenCachingResolutionTestingSuite struct {
 }
 
 func WhenCachingResolutionBeforeEach(t *testing.T) *WhenCachingResolutionTestingSuite {
-	ctrl := gomock.NewController(t)
-	mockCacheStorage := interfaces_mocks.NewMockCacheStorageInterface(ctrl)
+	mockController := gomock.NewController(t)
+	mockCacheStorage := interfaces_mocks.NewMockCacheStorageInterface(mockController)
 	settings := &ens_gateway_settings.CacheSettings{TtlSeconds: 3600}
 
 	return &WhenCachingResolutionTestingSuite{

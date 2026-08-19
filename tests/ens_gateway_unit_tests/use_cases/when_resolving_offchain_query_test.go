@@ -36,25 +36,25 @@ type WhenResolvingOffchainQueryTestingSuite struct {
 }
 
 func WhenResolvingOffchainQueryBeforeEach(t *testing.T) *WhenResolvingOffchainQueryTestingSuite {
-	ctrl := gomock.NewController(t)
-	mockResolverServiceCodec := interfaces_mocks.NewMockResolverServiceCodecInterface(ctrl)
-	mockAgentEnsRegistryReader := interfaces_mocks.NewMockAgentEnsRegistryReaderInterface(ctrl)
-	mockUniversalResolverClient := interfaces_mocks.NewMockUniversalResolverClientInterface(ctrl)
-	mockResponseBuilder := interfaces_mocks.NewMockResponseBuilderInterface(ctrl)
-	mockResolutionCache := interfaces_mocks.NewMockResolutionCacheInterface(ctrl)
+	mockController := gomock.NewController(t)
+	mockResolverServiceCodec := interfaces_mocks.NewMockResolverServiceCodecInterface(mockController)
+	mockAgentEnsRegistryReader := interfaces_mocks.NewMockAgentEnsRegistryReaderInterface(mockController)
+	mockUniversalResolverClient := interfaces_mocks.NewMockUniversalResolverClientInterface(mockController)
+	mockResponseBuilder := interfaces_mocks.NewMockResponseBuilderInterface(mockController)
+	mockResolutionCache := interfaces_mocks.NewMockResolutionCacheInterface(mockController)
 
-	mockEnsResolutionMetrics := metrics_mocks.NewMockEnsResolutionMetricsInterface(ctrl)
+	mockEnsResolutionMetrics := metrics_mocks.NewMockEnsResolutionMetricsInterface(mockController)
 
-	mockSpan := traces_mocks.NewMockSpan(ctrl)
+	mockSpan := traces_mocks.NewMockSpan(mockController)
 	mockSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
 	mockSpan.EXPECT().End().AnyTimes()
 
-	mockResolutionSpan := traces_mocks.NewMockResolutionSpan(ctrl)
+	mockResolutionSpan := traces_mocks.NewMockResolutionSpan(mockController)
 	mockResolutionSpan.EXPECT().RecordSource(gomock.Any()).AnyTimes()
 	mockResolutionSpan.EXPECT().Fail(gomock.Any()).AnyTimes()
 	mockResolutionSpan.EXPECT().End().AnyTimes()
 
-	mockResolutionTracer := traces_mocks.NewMockResolutionTracerInterface(ctrl)
+	mockResolutionTracer := traces_mocks.NewMockResolutionTracerInterface(mockController)
 	mockResolutionTracer.EXPECT().StartResolution(gomock.Any(), gomock.Any(), gomock.Any()).
 		DoAndReturn(func(ctx context.Context, _ string, _ uint64) (context.Context, traces_interfaces.ResolutionSpan) {
 			return ctx, mockResolutionSpan

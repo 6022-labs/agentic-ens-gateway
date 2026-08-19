@@ -31,8 +31,8 @@ func NewUniversalResolverClient(
 		resolverChainId, addr, ok := universalResolverSettings.Get(sourceChainId)
 		if !ok {
 			logger.Info("ENS fallback disabled for source chain: no resolver address for mapped chain",
-				zap.Uint64("source_chain_id", sourceChainId),
-				zap.Uint64("universal_resolver_chain_id", resolverChainId),
+				zap.Uint64("sourceChainId", sourceChainId),
+				zap.Uint64("universalResolverChainId", resolverChainId),
 			)
 			continue
 		}
@@ -41,8 +41,8 @@ func NewUniversalResolverClient(
 		if resolverChain == nil {
 			logger.Info(
 				"ENS fallback disabled for source chain: add chains.<universal_resolver_chain_id>.rpc_http_url to enable",
-				zap.Uint64("source_chain_id", sourceChainId),
-				zap.Uint64("universal_resolver_chain_id", resolverChainId),
+				zap.Uint64("sourceChainId", sourceChainId),
+				zap.Uint64("universalResolverChainId", resolverChainId),
 			)
 			continue
 		}
@@ -50,7 +50,7 @@ func NewUniversalResolverClient(
 		client, err := ethClientFactory.For(resolverChainId)
 		if err != nil {
 			logger.Fatal("failed to dial RPC for ENS fallback",
-				zap.Uint64("universal_resolver_chain_id", resolverChainId),
+				zap.Uint64("universalResolverChainId", resolverChainId),
 				zap.Error(err),
 			)
 		}
@@ -58,7 +58,7 @@ func NewUniversalResolverClient(
 		binding, err := abi.NewUniversalResolver(addr, client)
 		if err != nil {
 			logger.Fatal("failed to bind UniversalResolver",
-				zap.Uint64("universal_resolver_chain_id", resolverChainId),
+				zap.Uint64("universalResolverChainId", resolverChainId),
 				zap.String("address", addr.Hex()),
 				zap.Error(err),
 			)
@@ -66,9 +66,9 @@ func NewUniversalResolverClient(
 		bindings[sourceChainId] = binding
 
 		logger.Info("ENS fallback enabled",
-			zap.Uint64("source_chain_id", sourceChainId),
-			zap.Uint64("universal_resolver_chain_id", resolverChainId),
-			zap.String("universal_resolver", addr.Hex()),
+			zap.Uint64("sourceChainId", sourceChainId),
+			zap.Uint64("universalResolverChainId", resolverChainId),
+			zap.String("universalResolver", addr.Hex()),
 		)
 	}
 
