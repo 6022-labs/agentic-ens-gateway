@@ -64,4 +64,38 @@ func TestWhenLoadingHostSettings(t *testing.T) {
 			assert.Equal(t, "", result.ListenAddress)
 		})
 	})
+
+	t.Run("Given a non-positive api port", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"host.api_port": 0,
+		}, "."), nil)
+
+		t.Run("Should clamp it back to the default", func(t *testing.T) {
+			t.Parallel()
+
+			result := host_settings.NewHostSettings(zap.NewNop(), k, "host", 5000)
+
+			assert.Equal(t, 5000, result.ApiPort)
+		})
+	})
+
+	t.Run("Given a non-positive body limit", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"host.body_limit_bytes": 0,
+		}, "."), nil)
+
+		t.Run("Should clamp it back to 4MB", func(t *testing.T) {
+			t.Parallel()
+
+			result := host_settings.NewHostSettings(zap.NewNop(), k, "host", 5000)
+
+			assert.Equal(t, 4*1024*1024, result.BodyLimitBytes)
+		})
+	})
 }
