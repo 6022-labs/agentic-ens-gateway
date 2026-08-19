@@ -77,3 +77,42 @@ func TestWhenLoadingChainsSettings(t *testing.T) {
 		})
 	})
 }
+
+func TestWhenDefaultingTheChainRequestTimeout(t *testing.T) {
+	t.Parallel()
+
+	t.Run("Given a chain without an explicit request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"chains.137.rpc_http_url": "https://polygon-rpc.com",
+		}, "."), nil)
+
+		t.Run("Should default it so no RPC call can hang unbounded", func(t *testing.T) {
+			t.Parallel()
+
+			result := blockchain_settings.NewChainsSettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(10), result.Get(137).RequestTimeoutSeconds)
+		})
+	})
+
+	t.Run("Given a chain with an explicit request timeout", func(t *testing.T) {
+		t.Parallel()
+
+		k := koanf.New(".")
+		_ = k.Load(confmap.Provider(map[string]any{
+			"chains.137.rpc_http_url":            "https://polygon-rpc.com",
+			"chains.137.request_timeout_seconds": 3,
+		}, "."), nil)
+
+		t.Run("Should keep the configured value", func(t *testing.T) {
+			t.Parallel()
+
+			result := blockchain_settings.NewChainsSettings(zap.NewNop(), k)
+
+			assert.Equal(t, uint64(3), result.Get(137).RequestTimeoutSeconds)
+		})
+	})
+}

@@ -60,9 +60,6 @@ func main() {
 			} else {
 				logger.Info("Server stopped")
 			}
-			if err := shutdownTelemetry(context.Background()); err != nil {
-				logger.Warn("Telemetry shutdown returned an error", zap.Error(err))
-			}
 
 			logger.Info("Shutdown complete")
 			_ = logger.Sync()
