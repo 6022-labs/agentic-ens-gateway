@@ -76,10 +76,6 @@ func TestWhenLoadingChainsSettings(t *testing.T) {
 			assert.Nil(t, s.Get(999))
 		})
 	})
-}
-
-func TestWhenDefaultingTheChainRequestTimeout(t *testing.T) {
-	t.Parallel()
 
 	t.Run("Given a chain without an explicit request timeout", func(t *testing.T) {
 		t.Parallel()

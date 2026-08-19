@@ -48,10 +48,6 @@ func TestWhenLoadingHostSettings(t *testing.T) {
 			assert.Equal(t, 5000, result.ApiPort)
 		})
 	})
-}
-
-func TestWhenLoadingHostSettingsBodyLimit(t *testing.T) {
-	t.Parallel()
 
 	t.Run("Given body_limit_bytes is missing", func(t *testing.T) {
 		t.Parallel()

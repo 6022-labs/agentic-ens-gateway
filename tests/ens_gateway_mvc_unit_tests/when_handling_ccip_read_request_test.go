@@ -316,10 +316,6 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 			assert.Equal(t, "failed to resolve query", body["message"])
 		})
 	})
-}
-
-func TestWhenHandlingAMalformedCcipReadBody(t *testing.T) {
-	t.Parallel()
 
 	t.Run("Given a POST body that is not json", func(t *testing.T) {
 		t.Parallel()
