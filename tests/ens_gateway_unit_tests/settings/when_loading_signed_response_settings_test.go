@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// Throwaway key, never a deployed signer.
 const testPrivateKey = "0xb71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291"
 
 func TestWhenLoadingSignedResponseSettings(t *testing.T) {

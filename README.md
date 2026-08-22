@@ -1,31 +1,32 @@
-# agentic-ens-gateway
+# Agentic ENS Gateway
 
-ERC-3668 / CCIP-Read gateway for agent ENS records.
+[![Go Build](https://github.com/6022-labs/agentic-ens-gateway/actions/workflows/go-build.yml/badge.svg)](https://github.com/6022-labs/agentic-ens-gateway/actions/workflows/go-build.yml)
+[![Go Unit Tests](https://github.com/6022-labs/agentic-ens-gateway/actions/workflows/go-unit-tests.yml/badge.svg)](https://github.com/6022-labs/agentic-ens-gateway/actions/workflows/go-unit-tests.yml)
+[![Go Lint](https://github.com/6022-labs/agentic-ens-gateway/actions/workflows/go-lint.yml/badge.svg)](https://github.com/6022-labs/agentic-ens-gateway/actions/workflows/go-lint.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Agent text records (`agent.runtime-url`, `agent.runtime-kind`) are stored
-on-chain in `AgentEnsRegistry` contracts on one or more EVM chains. On Ethereum
-L1, the `AgentEnsOffchainResolver` contract reverts with `OffchainLookup` per
-ERC-3668, and a CCIP-Read client calls this gateway. The gateway:
+A CCIP-Read (ERC-3668) gateway that lets ENS on Ethereum answer questions about
+agents whose records live on another chain.
 
-1. Decodes the resolver's `IResolverService.resolve(bytes name, bytes data)`
-   call data, extracts the chain id from a fixed label of the DNS-encoded
-   name, then decodes the inner `text(bytes32 node, string key)` query.
-2. Reads `AgentEnsRegistry.text(node, key)` on the matching chain.
-3. Returns an ENS-format **signed** response — `abi.encode(result, expires,
-sig)` — that the L1 resolver's `SignatureVerifier` authenticates.
+An agent's records — its address, avatar, `agent.runtime-url` — are written to an
+`AgentEnsRegistry` contract on the chain its collection was deployed to, which is
+rarely Ethereum. ENS resolution, however, starts on Ethereum. The
+`AgentEnsOffchainResolver` there bridges the gap by reverting with
+`OffchainLookup`, which sends the client here. This gateway reads the record from
+the right chain, signs the answer, and the L1 resolver verifies that signature
+before handing the value back. The client gets a normal ENS lookup; the data
+never had to be on Ethereum.
 
-Architecture mirrors `agentic-agent-node` (hexagonal modules, `go.uber.org/dig`
-DI, `koanf` config, Fiber host, `when_*_test.go` tests).
+Part of the [6022 agentic ecosystem](https://docs.agentic.6022.io) — the contracts
+live in [`agentic-smart-contracts`](https://github.com/6022-labs/agentic-smart-contracts).
+
+Go, Fiber, `go.uber.org/dig`, `koanf`, Redis.
 
 ## Resolution flow
 
-End-to-end path from an agent's ENS name —
-`<agent>.<collection>.<chainId>.6022.eth` — to invoking the agent
-itself. The chain id label tells the gateway which chain's registry holds
-the records (`80002` = Polygon Amoy, `137` = Polygon mainnet). The
-client never talks to the registry chain directly — the `OffchainLookup`
-revert on L1 redirects it to this gateway, which reads the records cross-chain
-and signs them so L1 can verify the answer.
+An agent's name is `<agent>.<collection>.<chainId>.6022.eth`. The chain id label
+is what tells the gateway which registry holds the records — `80002` is Polygon
+Amoy, `137` Polygon mainnet. The client never talks to that chain itself.
 
 ```mermaid
 sequenceDiagram
@@ -54,8 +55,10 @@ sequenceDiagram
     A-->>U: agent response
 ```
 
-If the registry has no record for the node, step 4 falls back to the canonical
-ENS `UniversalResolver` — see [ENS fallback](#ens-fallback-optional) below.
+Step 4 is the whole job: decode `IResolverService.resolve(bytes name, bytes data)`,
+take the chain id from the DNS-encoded name and the `text` / `addr` query from the
+calldata, read the record (through a Redis cache), sign it. If the registry has no
+record for that node, the gateway falls back to canonical ENS — see below.
 
 ## Layout
 
@@ -66,6 +69,8 @@ ENS `UniversalResolver` — see [ENS fallback](#ens-fallback-optional) below.
 - `src/ens_gateway_host` — HTTP host entrypoint, DI wiring, server config.
 - `src/common` — telemetry bootstrap, shared metrics and middlewares.
 - `grafana/` — the observability stack (Alloy, Mimir, Loki, Tempo, dashboards).
+
+The HTTP API is documented in `src/ens_gateway_host/docs/` (`make swagger` regenerates it).
 
 ## Run
 
@@ -84,91 +89,65 @@ docker compose up
 - **Gateway:** http://localhost:5000
 - **Grafana:** http://localhost:3000
 
+## Configuration
+
+Every setting is reachable from `appsettings.json` or from the environment —
+double underscores map to the JSON nesting (`REDIS__HOST` is `redis.host`). See
+`src/ens_gateway_host/.env.example`, which documents each one.
+
+The one that matters most is `SIGNED_RESPONSE__PRIVATE_KEY`: the ECDSA key the
+gateway signs with. Its address must be in the L1 resolver's `signers` set, or
+every answer is rejected on-chain. Never commit it.
+
+Registry addresses are not operator config — they are baked into the build in
+`src/ens_gateway_blockchain/settings/agent_ens_registries.json`. A chain listed
+there without a configured RPC URL is skipped.
+
+## ENS fallback
+
+When the registry has no record for a node, the gateway falls back to the
+canonical ENS `UniversalResolver`. Each source chain routes to its own resolver
+chain — mainnet sources to Ethereum, testnet sources to Sepolia — and may route
+to itself, in which case the fallback is plain ENS resolution on that chain.
+
+That routing table lives in
+`src/ens_gateway_blockchain/settings/universal_resolvers.json`: a new source chain
+is one line, a new resolver deployment is one line. Set the resolver chain's
+`chains.<chain_id>.rpc_http_url` to turn it on; omit it and the fallback is off
+for every source chain mapped to it.
+
+A fallback that reverts — including the `OffchainLookup` of a resolver that is
+itself CCIP-Read — or an unreachable RPC logs a warning and returns the original
+empty result. Clients never see a 5xx from a failed fallback.
+
 ## Observability
 
 The host exports metrics, logs and traces over OTLP/gRPC to Grafana Alloy, which
 fans them out to Mimir, Loki and Tempo. Several apps and environments can share
-one stack; `service.name`, `service.instance.id` and `deployment.environment.name`
-distinguish them, and every dashboard filters on them.
+one stack — `service.name`, `service.instance.id` and
+`deployment.environment.name` tell them apart, and every dashboard filters on
+them. `TELEMETRY__*` configures the export side; see `.env.example`.
 
-Gateway side (`TELEMETRY__*`, or the `telemetry` block of `appsettings.json`):
+`grafana/dashboards/ens-gateway.json` covers resolution rate and latency by
+source, cache hit ratio, L1 fallback outcomes, decode errors and signing failures.
 
-| Setting | Meaning |
-| --- | --- |
-| `enabled` | export at all |
-| `endpoint` | Alloy OTLP/gRPC `host:port` |
-| `insecure` | disable TLS on the connection |
-| `instance_id` | value of `service.instance.id` |
-| `environment` | value of `deployment.environment.name` (required when enabled) |
-| `auth_token` | bearer credential |
-| `auth_username` + `auth_password` | basic credential |
+Alloy's OTLP ingest is **unauthenticated by default** and says so at startup.
+`OTLP_AUTH_HTPASSWD` / `OTLP_AUTH_TOKEN` turn authentication on, `OTLP_TLS_*`
+serves it over TLS — pair them on any untrusted network.
 
-The scheme is derived: a token means bearer, a username and password mean basic,
-neither means no authentication. Setting both is fatal at startup.
+## Development
 
-Alloy side — the OTLP ingest is **unauthenticated by default** and the entrypoint
-logs a warning saying so. `OTLP_AUTH_HTPASSWD` (basic, one credential per sender)
-or `OTLP_AUTH_TOKEN` (bearer, shared) enable it, and `OTLP_TLS_CERT_FILE` +
-`OTLP_TLS_KEY_FILE` serve it over TLS. Authentication over a plaintext connection
-sends the credential in the clear: pair it with TLS on any untrusted network.
-
-Beyond the shared HTTP, RPC and cache dashboards, `grafana/dashboards/ens-gateway.json`
-covers resolution rate and latency by source, cache hit ratio, L1 fallback outcomes,
-calldata decode errors and signing failures.
-
-## ENS fallback (optional)
-
-When the per-chain `AgentEnsRegistry` has no record for a node, the gateway
-can fall back to the canonical ENS `UniversalResolver` on a chain where one is
-deployed. Each source chain routes to its own resolver chain — mainnet sources
-fall back to Ethereum mainnet, testnet sources fall back to Sepolia. A chain
-can route to itself (e.g. chain 1 → chain 1), in which case the fallback just
-follows the standard ENS resolution path on that chain.
-
-**Routing table.** The mapping and the UniversalResolver address per chain are
-baked into `src/ens_gateway_blockchain/settings/universal_resolvers.json`:
-
-```json
-{
-  "resolvers": [
-    { "chainId": 1, "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe" },
-    {
-      "chainId": 11155111,
-      "address": "0xeEeEEEeE14D718C2B47D9923Deab1335E144EeEe"
-    }
-  ],
-  "mappings": [
-    { "sourceChainId": 1, "universalResolverChainId": 1 },
-    { "sourceChainId": 137, "universalResolverChainId": 1 },
-    { "sourceChainId": 80002, "universalResolverChainId": 11155111 }
-  ]
-}
+```sh
+make build   # go build ./src/...
+make test    # unit tests
+make lint    # golangci-lint v2
+make mocks   # regenerate gomock mocks after an interface change
+make swagger # regenerate the host API docs
 ```
 
-Adding a new source chain = one line in `mappings`. Adding a new resolver
-deployment = one line in `resolvers`. An empty `address` disables fallback for
-any source chain mapped to that resolver chain.
+Redis integration tests live in `tests/ens_gateway_redis_integration_tests/`, spin
+a real container, and stay out of `make test`. They need Docker.
 
-**Enabling at runtime.** For each resolver chain listed in `resolvers` with an
-address, configure the RPC URL in `chains.<universalResolverChainId>.rpc_http_url`:
+## License
 
-```json
-"chains": {
-  "137":      { "rpc_http_url": "https://polygon-rpc.example" },
-  "80002":    { "rpc_http_url": "https://amoy-rpc.example" },
-  "1":        { "rpc_http_url": "https://mainnet-rpc.example" },
-  "11155111": { "rpc_http_url": "https://sepolia-rpc.example" }
-}
-```
-
-or via env var, e.g. `CHAINS__1__RPC_HTTP_URL=…`. Omit a resolver chain's
-entry to disable the fallback for every source chain mapped to it.
-
-**Failure behavior.** If the resolver call reverts (e.g. the underlying
-resolver itself uses CCIP-Read and raises `OffchainLookup`) or the RPC is
-unreachable, the gateway logs at `warn` and returns the original empty result
-— clients never see a 5xx from a fallback failure.
-
-**Note.** Resolver chains present in `chains` only for fallback do not need an
-entry in `agent_ens_registries.json`. The registry reader iterates the
-registries file, so fallback-only chains are ignored by the registry lookup.
+MIT — see [LICENSE](LICENSE).
