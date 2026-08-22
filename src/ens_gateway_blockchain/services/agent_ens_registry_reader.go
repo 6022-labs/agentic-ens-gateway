@@ -15,7 +15,7 @@ type AgentEnsRegistryReader struct {
 	bindings map[uint64]*abi.AgentEnsRegistry
 }
 
-// Iterates agentEnsRegistriesSettings (not chains); extra chains in ChainsSettings are ignored.
+// Iterates agentEnsRegistriesSettings (not chains); a baked-in chain with no configured RPC is skipped, not fatal.
 func NewAgentEnsRegistryReader(
 	logger *zap.Logger,
 	chainsSettings *blockchain_settings.ChainsSettings,
@@ -27,11 +27,11 @@ func NewAgentEnsRegistryReader(
 	for chainId, address := range *agentEnsRegistriesSettings {
 		chain := chainsSettings.Get(chainId)
 		if chain == nil {
-			logger.Fatal(
-				"AgentEnsRegistry configured for a chain with no RPC url; "+
-					"add the chain to appsettings.json (chains.<id>.rpc_http_url)",
+			logger.Info(
+				"AgentEnsRegistry disabled for chain: add chains.<id>.rpc_http_url to enable",
 				zap.Uint64("chainId", chainId),
 			)
+			continue
 		}
 
 		client, err := ethClientFactory.For(chainId)
