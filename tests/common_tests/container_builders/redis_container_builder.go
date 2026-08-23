@@ -25,7 +25,7 @@ func startRedis() string {
 	if redisContainer == nil {
 		ctx := context.Background()
 		req := testcontainers.ContainerRequest{
-			Image:        "redis:latest",
+			Image:        "redis:8-alpine",
 			ExposedPorts: []string{"6379/tcp"},
 			WaitingFor:   wait.ForListeningPort("6379/tcp"),
 		}
