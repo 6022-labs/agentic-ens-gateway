@@ -1,4 +1,4 @@
-FROM grafana/mimir:3.1.1
+FROM grafana/mimir:3.2.0
 
 COPY mimir-config.yaml /etc/mimir/mimir.yml
 
