@@ -8,7 +8,7 @@ import (
 	"github.com/6022-labs/agentic-ens-gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/requests"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"go.uber.org/zap"
 )
 
@@ -46,9 +46,9 @@ func (c *CcipReadController) RegisterRoutes(app fiber.Router) {
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {object} errors.InternalError
 // @Router /{sender}/{data} [get]
-func (c *CcipReadController) HandleGet(ctx *fiber.Ctx) error {
+func (c *CcipReadController) HandleGet(ctx fiber.Ctx) error {
 	request := &requests.ResolveOffchainQueryRequest{}
-	if err := ctx.ParamsParser(request); err != nil {
+	if err := ctx.Bind().URI(request); err != nil {
 		return mvc.WriteError(ctx, errors.NewValidationError("data", "invalid call data hex"))
 	}
 
@@ -71,9 +71,9 @@ func (c *CcipReadController) HandleGet(ctx *fiber.Ctx) error {
 // @Failure 400 {object} errors.ValidationError
 // @Failure 500 {object} errors.InternalError
 // @Router /{sender} [post]
-func (c *CcipReadController) HandlePost(ctx *fiber.Ctx) error {
+func (c *CcipReadController) HandlePost(ctx fiber.Ctx) error {
 	request := &requests.ResolveOffchainQueryRequest{}
-	if err := ctx.BodyParser(request); err != nil {
+	if err := ctx.Bind().Body(request); err != nil {
 		return mvc.WriteError(ctx, errors.NewValidationError("body", "invalid request body"))
 	}
 
@@ -82,8 +82,8 @@ func (c *CcipReadController) HandlePost(ctx *fiber.Ctx) error {
 	return c.resolve(ctx, request)
 }
 
-func (c *CcipReadController) resolve(ctx *fiber.Ctx, request *requests.ResolveOffchainQueryRequest) error {
-	response, err := c.resolveOffchainQuery.Execute(ctx.UserContext(), request)
+func (c *CcipReadController) resolve(ctx fiber.Ctx, request *requests.ResolveOffchainQueryRequest) error {
+	response, err := c.resolveOffchainQuery.Execute(ctx.Context(), request)
 	if err != nil {
 		// A rejected request is caller error, not gateway error: logging it at Error lets any
 		// unauthenticated caller drive the error rate.

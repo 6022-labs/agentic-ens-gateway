@@ -8,8 +8,8 @@ import (
 
 // ResolveOffchainQueryRequest is the CCIP-Read sender plus its 0x-hex resolver call data.
 type ResolveOffchainQueryRequest struct {
-	Sender string `params:"sender" json:"sender"`
-	Data   string `params:"data"   json:"data"`
+	Sender string `uri:"sender" json:"sender"`
+	Data   string `uri:"data"   json:"data"`
 
 	sender common.Address
 	data   []byte

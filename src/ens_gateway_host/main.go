@@ -10,7 +10,7 @@ import (
 	"github.com/6022-labs/agentic-ens-gateway/src/common/host_configurations"
 	"github.com/6022-labs/agentic-ens-gateway/src/common/settings"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_host/configurations"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/joho/godotenv"
 	"go.uber.org/zap"
 )
@@ -41,7 +41,7 @@ func main() {
 
 		serverErrCh := make(chan error, 1)
 		go func() {
-			serverErrCh <- app.Listen(bind)
+			serverErrCh <- app.Listen(bind, fiber.ListenConfig{ListenerNetwork: "tcp"})
 		}()
 
 		sigCh := make(chan os.Signal, 1)
