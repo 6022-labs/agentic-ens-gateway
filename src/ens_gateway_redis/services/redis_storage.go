@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_redis/metrics/interfaces"
@@ -29,7 +30,7 @@ func (rs *RedisStorage) Store(key string, value any, expiration *time.Duration) 
 
 	start := time.Now()
 	err := rs.redisClient.Set(context.Background(), key, value, *expiration).Err()
-	rs.redisMetrics.RecordOperation(context.Background(), "SET", time.Since(start), err != nil)
+	rs.redisMetrics.RecordOperation(context.Background(), "SET", time.Since(start), err)
 	return err
 }
 
@@ -37,7 +38,7 @@ func (rs *RedisStorage) ReadString(key string) (*string, error) {
 	start := time.Now()
 	val, err := rs.redisClient.Get(context.Background(), key).Result()
 	// redis.Nil is a miss, not an operational failure.
-	rs.redisMetrics.RecordOperation(context.Background(), "GET", time.Since(start), err != nil && err != redis.Nil)
+	rs.redisMetrics.RecordOperation(context.Background(), "GET", time.Since(start), rs.operationError(err))
 	if err != nil {
 		if err == redis.Nil {
 			return nil, nil
@@ -46,4 +47,12 @@ func (rs *RedisStorage) ReadString(key string) (*string, error) {
 	}
 
 	return &val, nil
+}
+
+// operationError treats a missing key as a miss rather than an operational failure.
+func (rs *RedisStorage) operationError(err error) error {
+	if err == nil || errors.Is(err, redis.Nil) {
+		return nil
+	}
+	return err
 }

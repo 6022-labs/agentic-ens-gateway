@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -11,30 +12,22 @@ import (
 )
 
 type ApiRequestMetrics struct {
-	requestCounter    metric.Int64Counter
 	durationHistogram metric.Float64Histogram
 	activeRequests    metric.Int64UpDownCounter
-	errorCounter      metric.Int64Counter
 }
 
 // NewApiRequestMetrics builds the http.server.* instruments under the given meter scope.
+// The convention defines no request/error counters: the duration histogram's count is the request
+// count, and failures are the error.type dimension on it.
 func NewApiRequestMetrics(meterName string) *ApiRequestMetrics {
 	noopMeter := noop.NewMeterProvider().Meter(meterName)
 	meter := otel.GetMeterProvider().Meter(meterName)
-
-	requestCounter, err := meter.Int64Counter(
-		"http.server.request.count",
-		metric.WithDescription("Total number of HTTP requests handled by the server"),
-	)
-	if err != nil {
-		requestCounter, _ = noopMeter.Int64Counter("http.server.request.count")
-	}
 
 	durationHistogram, err := meter.Float64Histogram(
 		"http.server.request.duration",
 		metric.WithUnit("s"),
 		metric.WithExplicitBucketBoundaries(LatencySecondsBuckets...),
-		metric.WithDescription("Duration of HTTP requests"),
+		metric.WithDescription("Duration of HTTP server requests"),
 	)
 	if err != nil {
 		durationHistogram, _ = noopMeter.Float64Histogram("http.server.request.duration")
@@ -42,51 +35,49 @@ func NewApiRequestMetrics(meterName string) *ApiRequestMetrics {
 
 	activeRequests, err := meter.Int64UpDownCounter(
 		"http.server.active_requests",
-		metric.WithDescription("Number of in-flight HTTP requests"),
+		metric.WithUnit("{request}"),
+		metric.WithDescription("Number of active HTTP server requests"),
 	)
 	if err != nil {
 		activeRequests, _ = noopMeter.Int64UpDownCounter("http.server.active_requests")
 	}
 
-	errorCounter, err := meter.Int64Counter(
-		"http.server.request.errors",
-		metric.WithDescription("Total number of HTTP requests resulting in 5xx"),
-	)
-	if err != nil {
-		errorCounter, _ = noopMeter.Int64Counter("http.server.request.errors")
-	}
-
 	return &ApiRequestMetrics{
-		requestCounter:    requestCounter,
 		durationHistogram: durationHistogram,
 		activeRequests:    activeRequests,
-		errorCounter:      errorCounter,
 	}
 }
 
-func (m *ApiRequestMetrics) IncActiveRequests(ctx context.Context, method string) {
-	m.activeRequests.Add(ctx, 1, metric.WithAttributes(attribute.String("http.request.method", method)))
+func (m *ApiRequestMetrics) IncActiveRequests(ctx context.Context, method string, scheme string) {
+	m.activeRequests.Add(ctx, 1, m.activeAttributes(method, scheme))
 }
 
-func (m *ApiRequestMetrics) DecActiveRequests(ctx context.Context, method string) {
-	m.activeRequests.Add(ctx, -1, metric.WithAttributes(attribute.String("http.request.method", method)))
+func (m *ApiRequestMetrics) DecActiveRequests(ctx context.Context, method string, scheme string) {
+	m.activeRequests.Add(ctx, -1, m.activeAttributes(method, scheme))
 }
 
-// RecordRequest records one completed request: count, duration, and a 5xx error.
 func (m *ApiRequestMetrics) RecordRequest(
 	ctx context.Context,
-	method, route string,
+	method, route, scheme string,
 	statusCode int,
 	duration time.Duration,
 ) {
-	attrs := metric.WithAttributes(
+	attrs := []attribute.KeyValue{
 		attribute.String("http.request.method", method),
 		attribute.String("http.route", route),
+		attribute.String("url.scheme", scheme),
 		attribute.Int("http.response.status_code", statusCode),
-	)
-	m.requestCounter.Add(ctx, 1, attrs)
-	m.durationHistogram.Record(ctx, duration.Seconds(), attrs)
-	if statusCode >= 500 {
-		m.errorCounter.Add(ctx, 1, attrs)
 	}
+	// error.type is conditionally required, and only on a failed request.
+	if statusCode >= 500 {
+		attrs = append(attrs, attribute.String("error.type", strconv.Itoa(statusCode)))
+	}
+	m.durationHistogram.Record(ctx, duration.Seconds(), metric.WithAttributes(attrs...))
+}
+
+func (m *ApiRequestMetrics) activeAttributes(method string, scheme string) metric.MeasurementOption {
+	return metric.WithAttributes(
+		attribute.String("http.request.method", method),
+		attribute.String("url.scheme", scheme),
+	)
 }

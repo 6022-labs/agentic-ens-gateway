@@ -34,9 +34,12 @@ func (t *RpcRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	resp, err := t.base.RoundTrip(req)
 
-	// Count transport errors and 4xx/5xx; JSON-RPC errors return HTTP 200 and are not caught here.
-	failed := err != nil || (resp != nil && resp.StatusCode >= 400)
-	t.metrics.RecordRequest(req.Context(), t.chainId, time.Since(start), failed)
+	// JSON-RPC errors return HTTP 200 and are not caught here.
+	statusCode := 0
+	if resp != nil {
+		statusCode = resp.StatusCode
+	}
+	t.metrics.RecordRequest(req.Context(), t.chainId, req.URL.String(), time.Since(start), statusCode, err)
 
 	return resp, err
 }

@@ -18,7 +18,6 @@ const meterName = "agentic_ens_gateway"
 const errorTypeOther = "_OTHER"
 
 type EnsResolutionMetrics struct {
-	resolutionCounter   metric.Int64Counter
 	resolutionHistogram metric.Float64Histogram
 	cacheResultCounter  metric.Int64Counter
 	fallbackCounter     metric.Int64Counter
@@ -29,14 +28,6 @@ type EnsResolutionMetrics struct {
 func NewEnsResolutionMetrics() *EnsResolutionMetrics {
 	noopMeter := noop.NewMeterProvider().Meter(meterName)
 	meter := otel.GetMeterProvider().Meter(meterName)
-
-	resolutionCounter, err := meter.Int64Counter(
-		"ens.resolution.count",
-		metric.WithDescription("Total number of CCIP-Read resolutions"),
-	)
-	if err != nil {
-		resolutionCounter, _ = noopMeter.Int64Counter("ens.resolution.count")
-	}
 
 	resolutionHistogram, err := meter.Float64Histogram(
 		"ens.resolution.duration",
@@ -81,7 +72,6 @@ func NewEnsResolutionMetrics() *EnsResolutionMetrics {
 	}
 
 	return &EnsResolutionMetrics{
-		resolutionCounter:   resolutionCounter,
 		resolutionHistogram: resolutionHistogram,
 		cacheResultCounter:  cacheResultCounter,
 		fallbackCounter:     fallbackCounter,
@@ -102,12 +92,11 @@ func (m *EnsResolutionMetrics) RecordResolution(
 		attribute.String("ens.source", source),
 		attribute.String("chain.id", strconv.FormatUint(chainId, 10)),
 	}
-	// semconv forbids error.type on a completed operation, so it stays off the success path.
+	// error.type is conditionally required, and only on a failed operation.
 	if err != nil {
 		attrs = append(attrs, attribute.String("error.type", errorTypeOther))
 	}
 
-	m.resolutionCounter.Add(ctx, 1, metric.WithAttributes(attrs...))
 	m.resolutionHistogram.Record(ctx, duration.Seconds(), metric.WithAttributes(attrs...))
 }
 
