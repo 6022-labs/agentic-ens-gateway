@@ -42,13 +42,13 @@ func (m *MockRedisMetricsInterface) EXPECT() *MockRedisMetricsInterfaceMockRecor
 }
 
 // RecordOperation mocks base method.
-func (m *MockRedisMetricsInterface) RecordOperation(ctx context.Context, operation string, duration time.Duration, failed bool) {
+func (m *MockRedisMetricsInterface) RecordOperation(ctx context.Context, operation string, duration time.Duration, err error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordOperation", ctx, operation, duration, failed)
+	m.ctrl.Call(m, "RecordOperation", ctx, operation, duration, err)
 }
 
 // RecordOperation indicates an expected call of RecordOperation.
-func (mr *MockRedisMetricsInterfaceMockRecorder) RecordOperation(ctx, operation, duration, failed any) *gomock.Call {
+func (mr *MockRedisMetricsInterfaceMockRecorder) RecordOperation(ctx, operation, duration, err any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordOperation", reflect.TypeOf((*MockRedisMetricsInterface)(nil).RecordOperation), ctx, operation, duration, failed)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordOperation", reflect.TypeOf((*MockRedisMetricsInterface)(nil).RecordOperation), ctx, operation, duration, err)
 }

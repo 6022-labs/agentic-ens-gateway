@@ -2,6 +2,7 @@ package metrics
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	common_metrics "github.com/6022-labs/agentic-ens-gateway/src/common/metrics"
@@ -15,57 +16,50 @@ import (
 const meterName = "agentic_ens_gateway_blockchain"
 
 type BlockchainRpcMetrics struct {
-	requestCounter    metric.Int64Counter
 	durationHistogram metric.Float64Histogram
-	errorCounter      metric.Int64Counter
 }
 
 func NewBlockchainRpcMetrics() *BlockchainRpcMetrics {
 	noopMeter := noop.NewMeterProvider().Meter(meterName)
 	meter := otel.GetMeterProvider().Meter(meterName)
 
-	requestCounter, err := meter.Int64Counter(
-		"rpc.request.count",
-		metric.WithDescription("Total number of blockchain JSON-RPC requests"),
-	)
-	if err != nil {
-		requestCounter, _ = noopMeter.Int64Counter("rpc.request.count")
-	}
-
 	durationHistogram, err := meter.Float64Histogram(
 		"rpc.client.duration",
-		metric.WithUnit("s"),
-		metric.WithExplicitBucketBoundaries(common_metrics.LatencySecondsBuckets...),
+		metric.WithUnit("ms"),
+		metric.WithExplicitBucketBoundaries(common_metrics.RpcLatencyMillisecondsBuckets...),
 		metric.WithDescription("Duration of blockchain JSON-RPC requests"),
 	)
 	if err != nil {
 		durationHistogram, _ = noopMeter.Float64Histogram("rpc.client.duration")
 	}
 
-	errorCounter, err := meter.Int64Counter(
-		"rpc.request.errors",
-		metric.WithDescription("Total number of failed blockchain JSON-RPC requests"),
-	)
-	if err != nil {
-		errorCounter, _ = noopMeter.Int64Counter("rpc.request.errors")
-	}
-
 	return &BlockchainRpcMetrics{
-		requestCounter:    requestCounter,
 		durationHistogram: durationHistogram,
-		errorCounter:      errorCounter,
 	}
 }
 
 // RecordRequest records one JSON-RPC call: count, duration, and (when failed) an error.
-func (m *BlockchainRpcMetrics) RecordRequest(ctx context.Context, chainID string, duration time.Duration, failed bool) {
-	attrs := metric.WithAttributes(
+func (m *BlockchainRpcMetrics) RecordRequest(
+	ctx context.Context,
+	chainId string,
+	serverUrl string,
+	duration time.Duration,
+	statusCode int,
+	err error,
+) {
+	attrs := []attribute.KeyValue{
 		semconv.RPCSystemKey.String("jsonrpc"),
-		attribute.String("chain.id", chainID),
-	)
-	m.requestCounter.Add(ctx, 1, attrs)
-	m.durationHistogram.Record(ctx, duration.Seconds(), attrs)
-	if failed {
-		m.errorCounter.Add(ctx, 1, attrs)
+		attribute.String("chain.id", chainId),
 	}
+	attrs = append(attrs, common_metrics.ServerAttributes(serverUrl)...)
+	// error.type is conditionally required, and only on a failed call.
+	switch {
+	case err != nil:
+		attrs = append(attrs, attribute.String("error.type", common_metrics.ErrorType(err)))
+	case statusCode >= 400:
+		attrs = append(attrs, attribute.String("error.type", strconv.Itoa(statusCode)))
+	}
+
+	// The convention defines this instrument in milliseconds.
+	m.durationHistogram.Record(ctx, float64(duration.Nanoseconds())/1e6, metric.WithAttributes(attrs...))
 }

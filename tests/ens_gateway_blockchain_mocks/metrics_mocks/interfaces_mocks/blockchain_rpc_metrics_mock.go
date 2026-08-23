@@ -42,13 +42,13 @@ func (m *MockBlockchainRpcMetricsInterface) EXPECT() *MockBlockchainRpcMetricsIn
 }
 
 // RecordRequest mocks base method.
-func (m *MockBlockchainRpcMetricsInterface) RecordRequest(ctx context.Context, chainID string, duration time.Duration, failed bool) {
+func (m *MockBlockchainRpcMetricsInterface) RecordRequest(ctx context.Context, chainId, serverUrl string, duration time.Duration, statusCode int, err error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordRequest", ctx, chainID, duration, failed)
+	m.ctrl.Call(m, "RecordRequest", ctx, chainId, serverUrl, duration, statusCode, err)
 }
 
 // RecordRequest indicates an expected call of RecordRequest.
-func (mr *MockBlockchainRpcMetricsInterfaceMockRecorder) RecordRequest(ctx, chainID, duration, failed any) *gomock.Call {
+func (mr *MockBlockchainRpcMetricsInterfaceMockRecorder) RecordRequest(ctx, chainId, serverUrl, duration, statusCode, err any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRequest", reflect.TypeOf((*MockBlockchainRpcMetricsInterface)(nil).RecordRequest), ctx, chainID, duration, failed)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRequest", reflect.TypeOf((*MockBlockchainRpcMetricsInterface)(nil).RecordRequest), ctx, chainId, serverUrl, duration, statusCode, err)
 }

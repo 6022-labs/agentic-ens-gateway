@@ -97,7 +97,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (chain_id) (rate(rpc_request_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (chain_id) (rate(rpc_client_duration_milliseconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "chain {{chain_id}}"
         }
       ]
@@ -124,7 +124,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (chain_id) (rate(rpc_request_errors_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (chain_id) (rate(rpc_client_duration_milliseconds_count{error_type!=\"\",deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "chain {{chain_id}}"
         }
       ]
@@ -144,14 +144,14 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "s"
+          "unit": "ms"
         },
         "overrides": []
       },
       "targets": [
         {
           "refId": "A",
-          "expr": "histogram_quantile(0.95, sum by (le, chain_id) (rate(rpc_client_duration_seconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, chain_id) (rate(rpc_client_duration_milliseconds_bucket{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m])))",
           "legendFormat": "chain {{chain_id}}"
         }
       ]

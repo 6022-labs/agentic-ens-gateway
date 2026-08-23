@@ -97,7 +97,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (ens_query_kind, ens_source) (rate(ens_resolution_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (ens_query_kind, ens_source) (rate(ens_resolution_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "{{ens_query_kind}} {{ens_source}}"
         }
       ]
@@ -124,7 +124,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (ens_query_kind) (rate(ens_resolution_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\", error_type!=\"\"}[5m]))",
+          "expr": "sum by (ens_query_kind) (rate(ens_resolution_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\", error_type!=\"\"}[5m]))",
           "legendFormat": "{{ens_query_kind}}"
         }
       ]
@@ -286,7 +286,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (db_operation_name) (rate(db_client_operation_count_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (db_operation_name) (rate(db_client_operation_duration_seconds_count{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "{{db_operation_name}}"
         }
       ]
@@ -313,7 +313,7 @@
       "targets": [
         {
           "refId": "A",
-          "expr": "sum by (db_operation_name) (rate(db_client_operation_errors_total{deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (db_operation_name) (rate(db_client_operation_duration_seconds_count{error_type!=\"\",deployment_environment_name=~\"$environment\", service_name=~\"$service\"}[5m]))",
           "legendFormat": "{{db_operation_name}}"
         }
       ]

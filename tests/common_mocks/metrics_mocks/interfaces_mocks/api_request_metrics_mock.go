@@ -42,37 +42,37 @@ func (m *MockApiRequestMetricsInterface) EXPECT() *MockApiRequestMetricsInterfac
 }
 
 // DecActiveRequests mocks base method.
-func (m *MockApiRequestMetricsInterface) DecActiveRequests(ctx context.Context, method string) {
+func (m *MockApiRequestMetricsInterface) DecActiveRequests(ctx context.Context, method, scheme string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DecActiveRequests", ctx, method)
+	m.ctrl.Call(m, "DecActiveRequests", ctx, method, scheme)
 }
 
 // DecActiveRequests indicates an expected call of DecActiveRequests.
-func (mr *MockApiRequestMetricsInterfaceMockRecorder) DecActiveRequests(ctx, method any) *gomock.Call {
+func (mr *MockApiRequestMetricsInterfaceMockRecorder) DecActiveRequests(ctx, method, scheme any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecActiveRequests", reflect.TypeOf((*MockApiRequestMetricsInterface)(nil).DecActiveRequests), ctx, method)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DecActiveRequests", reflect.TypeOf((*MockApiRequestMetricsInterface)(nil).DecActiveRequests), ctx, method, scheme)
 }
 
 // IncActiveRequests mocks base method.
-func (m *MockApiRequestMetricsInterface) IncActiveRequests(ctx context.Context, method string) {
+func (m *MockApiRequestMetricsInterface) IncActiveRequests(ctx context.Context, method, scheme string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "IncActiveRequests", ctx, method)
+	m.ctrl.Call(m, "IncActiveRequests", ctx, method, scheme)
 }
 
 // IncActiveRequests indicates an expected call of IncActiveRequests.
-func (mr *MockApiRequestMetricsInterfaceMockRecorder) IncActiveRequests(ctx, method any) *gomock.Call {
+func (mr *MockApiRequestMetricsInterfaceMockRecorder) IncActiveRequests(ctx, method, scheme any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncActiveRequests", reflect.TypeOf((*MockApiRequestMetricsInterface)(nil).IncActiveRequests), ctx, method)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncActiveRequests", reflect.TypeOf((*MockApiRequestMetricsInterface)(nil).IncActiveRequests), ctx, method, scheme)
 }
 
 // RecordRequest mocks base method.
-func (m *MockApiRequestMetricsInterface) RecordRequest(ctx context.Context, method, route string, statusCode int, duration time.Duration) {
+func (m *MockApiRequestMetricsInterface) RecordRequest(ctx context.Context, method, route, scheme string, statusCode int, duration time.Duration) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "RecordRequest", ctx, method, route, statusCode, duration)
+	m.ctrl.Call(m, "RecordRequest", ctx, method, route, scheme, statusCode, duration)
 }
 
 // RecordRequest indicates an expected call of RecordRequest.
-func (mr *MockApiRequestMetricsInterfaceMockRecorder) RecordRequest(ctx, method, route, statusCode, duration any) *gomock.Call {
+func (mr *MockApiRequestMetricsInterfaceMockRecorder) RecordRequest(ctx, method, route, scheme, statusCode, duration any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRequest", reflect.TypeOf((*MockApiRequestMetricsInterface)(nil).RecordRequest), ctx, method, route, statusCode, duration)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordRequest", reflect.TypeOf((*MockApiRequestMetricsInterface)(nil).RecordRequest), ctx, method, route, scheme, statusCode, duration)
 }

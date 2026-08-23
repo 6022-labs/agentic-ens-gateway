@@ -24,10 +24,17 @@ func (m *ApiRequestMetricsMiddleware) Handle(ctx *fiber.Ctx) error {
 	start := time.Now()
 	method := ctx.Method()
 
+	// Protocol() trusts X-Forwarded-Proto, which any caller can set; clamp it so a hostile
+	// header cannot mint unbounded url.scheme series.
+	scheme := "http"
+	if ctx.Protocol() == "https" {
+		scheme = "https"
+	}
+
 	userCtx := ctx.UserContext()
-	m.metrics.IncActiveRequests(userCtx, method)
+	m.metrics.IncActiveRequests(userCtx, method, scheme)
 	err := ctx.Next()
-	m.metrics.DecActiveRequests(userCtx, method)
+	m.metrics.DecActiveRequests(userCtx, method, scheme)
 	if err != nil {
 		_ = ctx.App().ErrorHandler(ctx, err)
 		err = nil
@@ -39,7 +46,7 @@ func (m *ApiRequestMetricsMiddleware) Handle(ctx *fiber.Ctx) error {
 		route = ctx.Route().Path
 	}
 
-	m.metrics.RecordRequest(userCtx, method, route, ctx.Response().StatusCode(), time.Since(start))
+	m.metrics.RecordRequest(userCtx, method, route, scheme, ctx.Response().StatusCode(), time.Since(start))
 
 	return err
 }
