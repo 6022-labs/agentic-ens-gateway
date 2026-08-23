@@ -4,7 +4,7 @@ import (
 	"time"
 
 	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/metrics/interfaces"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 )
 
 // ApiRequestMetricsMiddleware records http.server.* metrics around every request; must run before handlers.
@@ -20,7 +20,7 @@ func NewApiRequestMetricsMiddleware(
 	}
 }
 
-func (m *ApiRequestMetricsMiddleware) Handle(ctx *fiber.Ctx) error {
+func (m *ApiRequestMetricsMiddleware) Handle(ctx fiber.Ctx) error {
 	start := time.Now()
 	method := ctx.Method()
 
@@ -31,7 +31,7 @@ func (m *ApiRequestMetricsMiddleware) Handle(ctx *fiber.Ctx) error {
 		scheme = "https"
 	}
 
-	userCtx := ctx.UserContext()
+	userCtx := ctx.Context()
 	m.metrics.IncActiveRequests(userCtx, method, scheme)
 	err := ctx.Next()
 	m.metrics.DecActiveRequests(userCtx, method, scheme)

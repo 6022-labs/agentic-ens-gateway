@@ -8,7 +8,7 @@ import (
 
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 )
 

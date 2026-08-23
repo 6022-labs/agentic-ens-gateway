@@ -19,7 +19,7 @@ import (
 	metrics_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/metrics_mocks/interfaces_mocks"
 	services_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/services_mocks/interfaces_mocks"
 	traces_mocks "github.com/6022-labs/agentic-ens-gateway/tests/ens_gateway_mocks/traces_mocks/interfaces_mocks"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v3"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
