@@ -19,7 +19,7 @@ Litmus: *external system / I/O / side effect / cross-cutting tier* → isolate b
 
 Hexagonal layering is the structure that enforces this:
 - Domain logic lives in the domain module only (`src/<domain>` with `configurations/ services/ services/interfaces/ repositories/ models/ settings/ use_cases/`). Adapters (`*_blockchain/_http_*/_mvc/_db/_vault`, plus each module's `metrics/` + `traces/`) only translate tier-service ↔ domain types.
-- **Inbound adapters are transport only — controllers AND listeners.** An HTTP `*_mvc` controller, a blockchain/event listener, or a queue consumer are all just *entry points into the business logic*: decode/deserialize the request/message → call exactly **one** use case → map the result back (status, ack/nack). **No business logic and no validation rules in them.** Message/body/field validation carries meaning → it's a business concern and lives in the use case, never in the transport adapter. Never return framework types from use cases.
+- **Inbound adapters are transport only — controllers AND listeners.** An HTTP `*_mvc` controller, a blockchain/event listener, or a queue consumer are all just *entry points into the business logic*: decode/deserialize the request/message → call exactly **one** use case → map the result back (status via the injected `common/mvc.ErrorWriter`, ack/nack, etc.). **No business logic and no validation rules in them.** Message/body/field validation carries meaning → it's a business concern and lives in the use case, never in the transport adapter. Never return framework types from use cases.
 - **Use cases are the domain entry points**: return `(*response, error)` (or `error`), depend only on ports (`services/interfaces/`, `repositories/`).
 - Domain packages never import `*_host/`; domain-consumed settings live in `<domain>/settings/`.
 - Adding behavior = define/extend a port → domain logic in `services/`/`use_cases/` → implement the port in the owner adapter → wire in DI.
@@ -55,7 +55,7 @@ otel is touched in exactly one place per module: a dedicated `metrics/` (and, wh
 - **DI**: `go.uber.org/dig`. Each module exposes `Add<Module>Configuration(container)`; wire it in the host's `configurations/di_configuration.go`.
 - **Config**: `koanf`. Every setting configurable from **both** `appsettings*.json` **and** env/`.env` (double-underscore lowercased → dotted, e.g. `JWT__SIGNING_KEY` → `jwt.signing_key`). Settings structs in each module's `settings/` with `koanf:"..."` tags + defaults in their `New...` constructor. New setting = tag + default + verified env override.
 - **Logging**: `go.uber.org/zap`.
-- **Errors → HTTP** (services with controllers): use cases fail with concrete types from `common/errors`, mapped centrally (e.g. `common/mvc.WriteError`): Validation→400, Unauthorized→401, NotFound→404, Conflict→409, Unavailable→502, Internal→500. Controllers pick the success status.
+- **Errors → HTTP**: use cases fail with concrete types from `common/errors`, mapped and logged by `common/mvc.ErrorWriter`, also the fiber `ErrorHandler` (500s log their cause and answer a generic message): `ValidationError`→400, `InternalError`→500; a plain error → 500. Controllers pick the success status (200). CCIP-Read (ERC-3668) exception: bind failures answer `ValidationError` `{field,message}` instead of `BadRequestError` (ethers/viem read that body), and the 400 for undecodable resolver call data keeps the ABI codec's error text.
 - (Secrets, persistence, and transport are tier-services — see §2.)
 
 ## 7. Naming
