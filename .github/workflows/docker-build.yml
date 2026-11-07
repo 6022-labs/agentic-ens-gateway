@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Detect changed images
         id: filter
@@ -77,7 +77,7 @@ jobs:
 
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # Go host images build from their module root, the others from their own folder.
       - name: Build
