@@ -3,6 +3,7 @@ package configurations
 import (
 	common_metrics "github.com/6022-labs/agentic-ens-gateway/src/common/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/metrics/interfaces"
+	"github.com/6022-labs/agentic-ens-gateway/src/common/mvc"
 	mvc_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/middlewares"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_mvc"
@@ -17,6 +18,10 @@ func AddEnsGatewayMvcConfiguration(container *dig.Container) {
 	}
 
 	if err := container.Provide(mvc_middlewares.NewApiRequestMetricsMiddleware); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(mvc.NewErrorWriter); err != nil {
 		panic(err)
 	}
 

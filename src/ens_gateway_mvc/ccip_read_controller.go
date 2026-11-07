@@ -1,7 +1,6 @@
 package ens_gateway_mvc
 
 import (
-	stderrors "errors"
 	"strings"
 
 	"github.com/6022-labs/agentic-ens-gateway/src/common/errors"
@@ -9,7 +8,6 @@ import (
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/use_cases/requests"
 	"github.com/gofiber/fiber/v3"
-	"go.uber.org/zap"
 )
 
 const (
@@ -18,15 +16,15 @@ const (
 )
 
 type CcipReadController struct {
-	logger               *zap.Logger
+	errorWriter          *mvc.ErrorWriter
 	resolveOffchainQuery *use_cases.ResolveOffchainQuery
 }
 
 func NewCcipReadController(
-	logger *zap.Logger,
+	errorWriter *mvc.ErrorWriter,
 	resolveOffchainQuery *use_cases.ResolveOffchainQuery,
 ) *CcipReadController {
-	return &CcipReadController{logger: logger, resolveOffchainQuery: resolveOffchainQuery}
+	return &CcipReadController{errorWriter: errorWriter, resolveOffchainQuery: resolveOffchainQuery}
 }
 
 func (c *CcipReadController) RegisterRoutes(app fiber.Router) {
@@ -49,7 +47,7 @@ func (c *CcipReadController) RegisterRoutes(app fiber.Router) {
 func (c *CcipReadController) HandleGet(ctx fiber.Ctx) error {
 	request := &requests.ResolveOffchainQueryRequest{}
 	if err := ctx.Bind().URI(request); err != nil {
-		return mvc.WriteError(ctx, errors.NewValidationError("data", "invalid call data hex"))
+		return c.errorWriter.Write(ctx, errors.NewValidationError("data", "invalid call data hex"))
 	}
 
 	// The GET route carries the call data in the path, where an optional `.json` suffix is allowed.
@@ -74,7 +72,7 @@ func (c *CcipReadController) HandleGet(ctx fiber.Ctx) error {
 func (c *CcipReadController) HandlePost(ctx fiber.Ctx) error {
 	request := &requests.ResolveOffchainQueryRequest{}
 	if err := ctx.Bind().Body(request); err != nil {
-		return mvc.WriteError(ctx, errors.NewValidationError("body", "invalid request body"))
+		return c.errorWriter.Write(ctx, errors.NewValidationError("body", "invalid request body"))
 	}
 
 	request.Sender = ctx.Params("sender")
@@ -85,16 +83,7 @@ func (c *CcipReadController) HandlePost(ctx fiber.Ctx) error {
 func (c *CcipReadController) resolve(ctx fiber.Ctx, request *requests.ResolveOffchainQueryRequest) error {
 	response, err := c.resolveOffchainQuery.Execute(ctx.Context(), request)
 	if err != nil {
-		// A rejected request is caller error, not gateway error: logging it at Error lets any
-		// unauthenticated caller drive the error rate.
-		var validationError *errors.ValidationError
-		if stderrors.As(err, &validationError) {
-			c.logger.Debug("rejected offchain query", zap.Error(err))
-		} else {
-			c.logger.Error("failed to resolve offchain query", zap.Error(err))
-		}
-
-		return mvc.WriteError(ctx, err)
+		return c.errorWriter.Write(ctx, err)
 	}
 
 	return ctx.JSON(response)

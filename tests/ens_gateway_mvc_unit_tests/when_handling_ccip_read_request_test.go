@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	cb_errors "github.com/6022-labs/agentic-ens-gateway/src/common/errors"
+	"github.com/6022-labs/agentic-ens-gateway/src/common/mvc"
 	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services"
 	ens_gateway_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/services/interfaces"
 	traces_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway/traces/interfaces"
@@ -71,7 +73,7 @@ func WhenHandlingCcipReadRequestBeforeEach(t *testing.T) *WhenHandlingCcipReadRe
 		mockResolutionTracer,
 	)
 
-	controller := ens_gateway_mvc.NewCcipReadController(zap.NewNop(), resolveOffchainQuery)
+	controller := ens_gateway_mvc.NewCcipReadController(mvc.NewErrorWriter(zap.NewNop()), resolveOffchainQuery)
 	app := fiber.New()
 	controller.RegisterRoutes(app)
 
@@ -294,10 +296,10 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 		t.Parallel()
 
 		initSuite := func(suite *WhenHandlingCcipReadRequestTestingSuite) {
-			expectResolvedText(suite, nil, errors.New("boom"))
+			expectResolvedText(suite, nil, errors.New("dial tcp: lookup rpc.example/v2/secret-key"))
 		}
 
-		t.Run("Should return 500", func(t *testing.T) {
+		t.Run("Should return 500 with the generic message and without the cause", func(t *testing.T) {
 			t.Parallel()
 
 			suite := WhenHandlingCcipReadRequestBeforeEach(t)
@@ -309,11 +311,13 @@ func TestWhenHandlingCcipReadRequest(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
 
-			// The gateway is public: the 500 body must not echo the internal error.
+			raw, err := io.ReadAll(resp.Body)
+			assert.NoError(t, err)
 			var body map[string]string
-			assert.NoError(t, json.NewDecoder(resp.Body).Decode(&body))
+			assert.NoError(t, json.Unmarshal(raw, &body))
 			assert.Equal(t, "internal_error", body["code"])
-			assert.Equal(t, "failed to resolve query", body["message"])
+			assert.Equal(t, cb_errors.InternalErrorMessage, body["message"])
+			assert.NotContains(t, string(raw), "secret-key")
 		})
 	})
 

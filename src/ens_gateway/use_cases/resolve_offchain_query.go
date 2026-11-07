@@ -14,8 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-const internalErrorMessage = "failed to resolve query"
-
 type ResolveOffchainQuery struct {
 	resolverServiceCodec ens_gateway_interfaces.ResolverServiceCodecInterface
 	recordResolver       ens_gateway_interfaces.RecordResolverInterface
@@ -72,15 +70,14 @@ func (u *ResolveOffchainQuery) Execute(
 	u.ensResolutionMetrics.RecordResolution(ctx, queryKind, source, query.ChainId, time.Since(start), err)
 	if err != nil {
 		span.Fail(err)
-		// The gateway is public: internal failures answer with a detail-free 500.
-		return nil, errors.NewInternalError("internal_error", internalErrorMessage)
+		return nil, errors.NewInternalError("internal_error", fmt.Errorf("resolve record: %w", err))
 	}
 
 	signed, err := u.responseBuilder.Build(ctx, request.SenderAddress(), callData, result)
 	u.ensResolutionMetrics.RecordSignedResponse(ctx, err)
 	if err != nil {
 		span.Fail(err)
-		return nil, errors.NewInternalError("internal_error", internalErrorMessage)
+		return nil, errors.NewInternalError("internal_error", fmt.Errorf("build signed response: %w", err))
 	}
 
 	return &responses.CcipReadResponse{Data: hexutil.Encode(signed)}, nil

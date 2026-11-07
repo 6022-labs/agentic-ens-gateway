@@ -1,6 +1,7 @@
 package configurations
 
 import (
+	"github.com/6022-labs/agentic-ens-gateway/src/common/mvc"
 	mvc_interfaces "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/interfaces"
 	mvc_middlewares "github.com/6022-labs/agentic-ens-gateway/src/common/mvc/middlewares"
 	"github.com/6022-labs/agentic-ens-gateway/src/common/settings"
@@ -26,10 +27,11 @@ func ConfigureServer(container *dig.Container) {
 	}
 }
 
-func newHttpServer(hostSettings *settings.HostSettings) *fiber.App {
+func newHttpServer(hostSettings *settings.HostSettings, errorWriter *mvc.ErrorWriter) *fiber.App {
 	return fiber.New(fiber.Config{
-		AppName:   AppName,
-		BodyLimit: hostSettings.BodyLimitBytes,
+		AppName:      AppName,
+		BodyLimit:    hostSettings.BodyLimitBytes,
+		ErrorHandler: errorWriter.Write,
 	})
 }
 
