@@ -3,13 +3,14 @@ package factory
 import (
 	"time"
 
+	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/transports"
+
 	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
 
-	"github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/metrics"
 	metrics_interfaces "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/metrics/interfaces"
 	blockchain_settings "github.com/6022-labs/agentic-ens-gateway/src/ens_gateway_blockchain/settings"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -49,16 +50,21 @@ func (f *EthClientFactory) For(chainId uint64) (*ethclient.Client, error) {
 		return nil, fmt.Errorf("no RPC configured for chain %d", chainId)
 	}
 
+	rpcRoundTripper, err := transports.NewRpcRoundTripper(
+		http.DefaultTransport,
+		chain.RpcHttpUrl,
+		f.blockchainRpcMetrics,
+		strconv.FormatUint(chainId, 10),
+	)
+	if err != nil {
+		return nil, err
+	}
 	httpClient := &http.Client{
-		Timeout: time.Duration(chain.RequestTimeoutSeconds) * time.Second,
-		Transport: metrics.NewRpcRoundTripper(
-			http.DefaultTransport,
-			f.blockchainRpcMetrics,
-			strconv.FormatUint(chainId, 10),
-		),
+		Timeout:   time.Duration(chain.RequestTimeoutSeconds) * time.Second,
+		Transport: rpcRoundTripper,
 	}
 
-	rpcClient, err := rpc.DialOptions(context.Background(), chain.RpcHttpUrl, rpc.WithHTTPClient(httpClient))
+	rpcClient, err := rpc.DialOptions(context.Background(), rpcRoundTripper.Origin(), rpc.WithHTTPClient(httpClient))
 	if err != nil {
 		return nil, fmt.Errorf("dial chain %d: %w", chainId, err)
 	}
