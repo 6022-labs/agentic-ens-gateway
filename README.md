@@ -122,11 +122,13 @@ empty result. Clients never see a 5xx from a failed fallback.
 
 ## Observability
 
-The host exports metrics, logs and traces over OTLP/gRPC to Grafana Alloy, which
+The host exports metrics, logs and traces over OTLP to Grafana Alloy, which
 fans them out to Mimir, Loki and Tempo. Several apps and environments can share
 one stack — `service.name`, `service.instance.id` and
 `deployment.environment.name` tell them apart, and every dashboard filters on
 them. `TELEMETRY__*` configures the export side; see `.env.example`.
+`TELEMETRY__PROTOCOL` picks `grpc` (default, port 4317) or `http` (port 4318) for
+hosts whose route to Alloy only carries plain HTTPS.
 
 `grafana/dashboards/ens-gateway.json` covers resolution rate and latency by
 source, cache hit ratio, L1 fallback outcomes, decode errors and signing failures.
