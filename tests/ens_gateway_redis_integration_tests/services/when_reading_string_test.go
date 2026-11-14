@@ -20,7 +20,7 @@ type WhenReadingStringTestingSuite struct {
 }
 
 func WhenReadingStringBeforeEach(t *testing.T) *WhenReadingStringTestingSuite {
-	redisClient := container_builders.GetRedisConnection()
+	redisClient := container_builders.GetRedisContainerBuilder().Create()
 
 	redisMetrics := metrics_mocks.NewMockRedisMetricsInterface(gomock.NewController(t))
 	redisMetrics.EXPECT().RecordOperation(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
@@ -37,7 +37,7 @@ func WhenReadingStringBeforeEach(t *testing.T) *WhenReadingStringTestingSuite {
 }
 
 func WhenReadingStringAfterEach(suite *WhenReadingStringTestingSuite) {
-	container_builders.CloseRedisConnection(suite.redisClient)
+	container_builders.GetRedisContainerBuilder().DropConnection(suite.redisClient)
 }
 
 func TestWhenReadingString(t *testing.T) {
