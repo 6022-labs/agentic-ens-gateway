@@ -145,6 +145,7 @@ make test    # unit tests
 make lint    # golangci-lint v2
 make mocks   # regenerate gomock mocks after an interface change
 make swagger # regenerate the host API docs
+make hooks   # git hooks: format + secret scan on commit, build/lint/test on push
 ```
 
 Redis integration tests live in `tests/ens_gateway_redis_integration_tests/`, spin

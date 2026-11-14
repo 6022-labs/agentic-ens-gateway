@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Public EVM addresses and test signing key"
+regexes = [
+  '''^0x[0-9a-fA-F]{40}$''',
+  '''b71c71a67e1177ad4e901695e1b4b9ee17ae16c6668d313eac2f96dbcda3f291''',
+]
