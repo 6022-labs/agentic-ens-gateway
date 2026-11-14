@@ -1,4 +1,4 @@
-.PHONY: build test lint fmt mocks swagger help
+.PHONY: build test lint fmt mocks swagger hooks help
 
 # build compiles every Go package under src/.
 build:
@@ -24,6 +24,12 @@ mocks:
 swagger:
 	./src/ens_gateway_host/docs/generate_docs.sh
 
+# hooks installs pinned lefthook + gitleaks into GOPATH/bin and wires the git hooks.
+hooks:
+	go install github.com/evilmartians/lefthook/v2@v2.2.2
+	go install github.com/zricethezav/gitleaks/v8@v8.30.1
+	$$(go env GOPATH)/bin/lefthook install
+
 help:
 	@echo "build       - go build ./src/..."
 	@echo "test        - go test unit-test packages"
@@ -31,3 +37,4 @@ help:
 	@echo "fmt         - golangci-lint fmt, 120-char cap"
 	@echo "mocks       - regenerate mocks (needs deepsearch-mockgen)"
 	@echo "swagger     - regenerate host API docs (needs go toolchain)"
+	@echo "hooks       - install git hooks (format + secret scan on commit, build/lint/test on push)"
