@@ -21,6 +21,14 @@ func AddEnsGatewayConfiguration(container *dig.Container) {
 		panic(err)
 	}
 
+	if err := container.Provide(ens_gateway_settings.NewRateLimitSettings); err != nil {
+		panic(err)
+	}
+
+	if err := container.Provide(ens_gateway_settings.NewProxySettings); err != nil {
+		panic(err)
+	}
+
 	if err := container.Provide(ens_gateway_settings.NewCacheSettings); err != nil {
 		panic(err)
 	}
